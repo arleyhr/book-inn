@@ -6,6 +6,9 @@ import { ReviewsService } from '../../hotels/services/reviews.service';
 import { GooglePlacesService } from '../../hotels/services/google-places.service';
 import { UsersService } from '../../users/services/users.service';
 import { UserRole } from '../../users/entities/user.entity';
+import { ReservationsService } from '../../reservations/services/reservations.service';
+import { MessagesService } from '../../reservations/services/messages.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class SeederService {
@@ -47,6 +50,45 @@ export class SeederService {
     'Área VIP'
   ];
 
+  private readonly travelerNames = [
+    { firstName: 'Juan', lastName: 'Pérez' },
+    { firstName: 'María', lastName: 'González' },
+    { firstName: 'Carlos', lastName: 'Rodríguez' },
+    { firstName: 'Ana', lastName: 'Martínez' },
+    { firstName: 'Luis', lastName: 'Sánchez' },
+    { firstName: 'Laura', lastName: 'López' },
+    { firstName: 'Diego', lastName: 'Torres' },
+    { firstName: 'Sofía', lastName: 'Ramírez' },
+    { firstName: 'Andrés', lastName: 'Herrera' },
+    { firstName: 'Valentina', lastName: 'Díaz' }
+  ];
+
+  private readonly messageTemplates = [
+    '¿A qué hora es el check-in?',
+    'Necesito solicitar un late check-out',
+    '¿Tienen servicio de transporte desde el aeropuerto?',
+    '¿El desayuno está incluido?',
+    'Llegaremos tarde, después de las 10 PM',
+    '¿Tienen caja fuerte en la habitación?',
+    '¿Puedo solicitar una cama adicional?',
+    'Necesito información sobre el parqueadero',
+    '¿Tienen servicio a la habitación 24 horas?',
+    'Somos alérgicos, necesitamos almohadas hipoalergénicas'
+  ];
+
+  private readonly agentResponses = [
+    'El check-in es a partir de las 3 PM',
+    'El late check-out tiene un costo adicional del 50% de la tarifa',
+    'Sí, tenemos servicio de transporte. El costo es de $50.000',
+    'Sí, el desayuno buffet está incluido de 6 AM a 10 AM',
+    'No hay problema, nuestra recepción está abierta 24/7',
+    'Sí, todas las habitaciones cuentan con caja fuerte digital',
+    'Podemos agregar una cama por $100.000 adicionales por noche',
+    'Tenemos parqueadero cubierto sin costo adicional',
+    'El servicio a la habitación opera hasta las 11 PM',
+    'Con gusto prepararemos su habitación con elementos hipoalergénicos'
+  ];
+
   constructor(
     private readonly configService: ConfigService,
     private readonly hotelsService: HotelsService,
@@ -54,6 +96,8 @@ export class SeederService {
     private readonly reviewsService: ReviewsService,
     private readonly googlePlacesService: GooglePlacesService,
     private readonly usersService: UsersService,
+    private readonly reservationsService: ReservationsService,
+    private readonly messagesService: MessagesService,
   ) {}
 
   private getRandomNumber(min: number, max: number): number {
@@ -62,6 +106,10 @@ export class SeederService {
 
   private getRandomElement<T>(array: T[]): T {
     return array[Math.floor(Math.random() * array.length)];
+  }
+
+  private getRandomDate(start: Date, end: Date): Date {
+    return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
   }
 
   private generateRoomTypes(priceLevel: number) {
@@ -85,6 +133,82 @@ export class SeederService {
     return rooms;
   }
 
+  private async createTravelers() {
+    const travelers = [];
+    for (const { firstName, lastName } of this.travelerNames) {
+      const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`;
+      let traveler = await this.usersService.findByEmail(email);
+
+      if (!traveler) {
+        const hashedPassword = await bcrypt.hash('password123', 10);
+        traveler = await this.usersService.create({
+          email,
+          password: hashedPassword,
+          firstName,
+          lastName,
+          role: UserRole.TRAVELER,
+        });
+      }
+      travelers.push(traveler);
+    }
+    return travelers;
+  }
+
+  private async generateReservations(rooms: any[], travelers: any[], agent: any) {
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setFullYear(endDate.getFullYear() + 1);
+
+    for (const room of rooms) {
+      const reservationsCount = this.getRandomNumber(2, 5);
+
+      for (let i = 0; i < reservationsCount; i++) {
+        const traveler = this.getRandomElement(travelers);
+        const checkInDate = this.getRandomDate(startDate, endDate);
+        const checkOutDate = new Date(checkInDate);
+        checkOutDate.setDate(checkOutDate.getDate() + this.getRandomNumber(1, 7));
+
+        const reservation = await this.reservationsService.create({
+          checkInDate: checkInDate.toISOString().split('T')[0],
+          checkOutDate: checkOutDate.toISOString().split('T')[0],
+          guestName: `${traveler.firstName} ${traveler.lastName}`,
+          guestEmail: traveler.email,
+          guestPhone: `+57${this.getRandomNumber(300, 350)}${this.getRandomNumber(1000000, 9999999)}`,
+          emergencyContactName: this.getRandomElement(this.travelerNames).firstName,
+          emergencyContactPhone: `+57${this.getRandomNumber(300, 350)}${this.getRandomNumber(1000000, 9999999)}`,
+          roomId: room.id,
+          userId: traveler.id
+        });
+
+        if (Math.random() > 0.3) {
+          await this.reservationsService.confirm({
+            reservationId: reservation.id
+          }, agent.id);
+
+          const messagesCount = this.getRandomNumber(1, 4);
+          for (let j = 0; j < messagesCount; j++) {
+            await this.messagesService.sendMessage({
+              reservationId: reservation.id,
+              message: this.getRandomElement(this.messageTemplates)
+            }, traveler.id);
+
+            await this.messagesService.sendMessage({
+              reservationId: reservation.id,
+              message: this.getRandomElement(this.agentResponses)
+            }, agent.id);
+          }
+        }
+
+        if (Math.random() < 0.2) {
+          await this.reservationsService.cancel({
+            reservationId: reservation.id,
+            reason: 'Cambio de planes'
+          }, Math.random() > 0.5 ? agent.id : traveler.id, Math.random() > 0.5);
+        }
+      }
+    }
+  }
+
   async generateSeedData(count = 10) {
     try {
       this.logger.log(`Starting seed data generation for ${count} hotels`);
@@ -95,15 +219,19 @@ export class SeederService {
 
       if (!agent) {
         this.logger.log('Agent user not found, creating new agent');
+        const hashedPassword = await bcrypt.hash('password123', 10);
         agent = await this.usersService.create({
           email: agentEmail,
-          password: 'password123',
+          password: hashedPassword,
           firstName: 'Test',
           lastName: 'Agent',
           role: UserRole.AGENT,
         });
         this.logger.log(`Created new agent with ID: ${agent.id}`);
       }
+
+      const travelers = await this.createTravelers();
+      this.logger.log(`Created ${travelers.length} travelers`);
 
       const hotelsPerCity = Math.ceil(count / this.colombianCities.length);
       let totalHotels = 0;
@@ -151,21 +279,27 @@ export class SeederService {
             }
 
             const roomTypes = this.generateRoomTypes(details.price_level);
+            const createdRooms = [];
             for (const roomData of roomTypes) {
               const room = await this.roomsService.create({
                 ...roomData,
                 hotelId: newHotel.id,
               });
+              createdRooms.push(room);
               this.logger.debug(`Created room with ID: ${room.id}`);
             }
 
+            await this.generateReservations(createdRooms, travelers, agent);
+            this.logger.debug(`Generated reservations and messages for hotel ${newHotel.id}`);
+
             if (details.reviews) {
               for (const review of details.reviews.slice(0, 5)) {
+                const reviewer = this.getRandomElement(travelers);
                 await this.reviewsService.create({
                   rating: review.rating,
                   comment: review.text,
                   hotelId: newHotel.id,
-                  userId: agent.id,
+                  userId: reviewer.id,
                 });
               }
             }

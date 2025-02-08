@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { Hotel } from '../../hotels/entities/hotel.entity';
 import { Review } from '../../hotels/entities/review.entity';
 import { Reservation } from '../../reservations/entities/reservation.entity';
+import { ReservationMessage } from '../../reservations/entities/message.entity';
 
 export enum UserRole {
   AGENT = 'agent',
@@ -58,4 +59,7 @@ export class User {
 
   @OneToMany(() => Reservation, (reservation) => reservation.confirmedByUser)
   confirmedReservations: Reservation[];
+
+  @OneToMany(() => ReservationMessage, (message) => message.sender)
+  sentMessages: ReservationMessage[];
 }

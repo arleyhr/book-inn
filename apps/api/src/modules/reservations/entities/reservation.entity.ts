@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Room } from '../../hotels/entities/room.entity';
+import { ReservationMessage } from './message.entity';
 
 export enum ReservationStatus {
   PENDING = 'pending',
@@ -84,4 +85,7 @@ export class Reservation {
   @ManyToOne(() => Room, (room) => room.reservations)
   @JoinColumn({ name: 'roomId' })
   room: Room;
+
+  @OneToMany(() => ReservationMessage, (message) => message.reservation)
+  messages: ReservationMessage[];
 }

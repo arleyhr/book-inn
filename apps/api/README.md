@@ -292,6 +292,91 @@ Create a new review for a hotel.
 }
 ```
 
+### Statistics (Agent Only)
+
+#### Get Hotel Occupancy Stats
+```http
+GET /statistics/occupancy
+```
+Get occupancy statistics for a specific hotel.
+
+Query Parameters:
+- `hotelId`: Hotel ID
+- `startDate`: Start date (YYYY-MM-DD)
+- `endDate`: End date (YYYY-MM-DD)
+
+Response:
+```json
+{
+  "totalRooms": 20,
+  "occupiedRooms": 15,
+  "occupancyRate": 75,
+  "upcomingReservations": 5
+}
+```
+
+#### Get Hotel Revenue Stats
+```http
+GET /statistics/revenue
+```
+Get revenue statistics for a specific hotel.
+
+Query Parameters:
+- `hotelId`: Hotel ID
+- `startDate`: Start date (YYYY-MM-DD)
+- `endDate`: End date (YYYY-MM-DD)
+
+Response:
+```json
+{
+  "totalRevenue": 15000,
+  "periodRevenue": 5000,
+  "averageRoomRate": 200,
+  "reservationsCount": 75
+}
+```
+
+### Messages
+
+#### Send Message
+```http
+POST /messages
+```
+Send a message in the context of a reservation. Only the agent and the traveler involved in the reservation can send messages, and only while the reservation is active (not cancelled or completed).
+
+**Request Body:**
+```json
+{
+  "reservationId": "number",
+  "message": "string"
+}
+```
+
+#### Get Reservation Messages
+```http
+GET /messages/reservation/:reservationId
+```
+Get all messages for a specific reservation. Only the agent and the traveler involved in the reservation can view the messages.
+
+Response:
+```json
+[
+  {
+    "id": 1,
+    "message": "Hello, I have a question about the check-in time",
+    "senderId": 2,
+    "reservationId": 1,
+    "createdAt": "2024-02-20T15:30:00Z",
+    "sender": {
+      "id": 2,
+      "firstName": "John",
+      "lastName": "Doe",
+      "role": "traveler"
+    }
+  }
+]
+```
+
 ## Error Responses
 
 The API uses standard HTTP status codes and returns error messages in the following format:
