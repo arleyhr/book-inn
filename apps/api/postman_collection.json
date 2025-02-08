@@ -305,6 +305,124 @@
               "raw": "{\n  \"checkInDate\": \"2024-02-20\",\n  \"checkOutDate\": \"2024-02-25\",\n  \"guestName\": \"Juan Pérez\",\n  \"guestEmail\": \"juan@ejemplo.com\",\n  \"guestPhone\": \"+573001234567\",\n  \"emergencyContactName\": \"María Pérez\",\n  \"emergencyContactPhone\": \"+573009876543\",\n  \"roomId\": 1\n}"
             }
           }
+        },
+        {
+          "name": "Get All Reservations (Agent)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations",
+              "host": ["{{base_url}}"],
+              "path": ["reservations"],
+              "query": [
+                {
+                  "key": "hotelId",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "startDate",
+                  "value": "2024-02-01",
+                  "disabled": true
+                },
+                {
+                  "key": "endDate",
+                  "value": "2024-02-28",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Hotel Reservations (Agent)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations/hotel/1",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", "hotel", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Reservation Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations/1",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", "1"]
+            }
+          }
+        },
+        {
+          "name": "Confirm Reservation (Agent)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations/confirm",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", "confirm"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reservationId\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Cancel Reservation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", "cancel"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reservationId\": 1,\n  \"reason\": \"Change of plans\"\n}"
+            }
+          }
         }
       ]
     },

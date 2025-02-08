@@ -52,4 +52,10 @@ export class User {
 
   @OneToMany(() => Reservation, (reservation) => reservation.user)
   reservations: Reservation[];
+
+  @OneToMany(() => Reservation, (reservation) => reservation.cancelledByUser)
+  cancelledReservations: Reservation[];
+
+  @OneToMany(() => Reservation, (reservation) => reservation.confirmedByUser)
+  confirmedReservations: Reservation[];
 }
