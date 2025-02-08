@@ -10,7 +10,7 @@ export class Review {
   @Column()
   rating: number;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'text', charset: 'utf8mb4', collation: 'utf8mb4_unicode_ci' })
   comment: string;
 
   @Column()
@@ -25,11 +25,11 @@ export class Review {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => User, (user) => user.reviews)
-  @JoinColumn({ name: 'userId' })
-  user: User;
-
   @ManyToOne(() => Hotel, (hotel) => hotel.reviews)
   @JoinColumn({ name: 'hotelId' })
   hotel: Hotel;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'userId' })
+  user: User;
 }

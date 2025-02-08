@@ -37,4 +37,12 @@ export class CreateHotelDto {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
+
+  @IsNumber()
+  @IsNotEmpty()
+  agentId: number;
+
+  @IsString()
+  @IsOptional()
+  placeId?: string;
 }

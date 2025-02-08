@@ -16,4 +16,6 @@ export default registerAs('database', () => ({
   autoLoadEntities: true,
   synchronize: process.env.NODE_ENV !== 'production',
   logging: process.env.NODE_ENV !== 'production',
+  charset: 'utf8mb4',
+  collation: 'utf8mb4_unicode_ci',
 }));

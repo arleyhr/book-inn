@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn, ManyToMany, JoinTable } from 'typeorm';
 import { Room } from './room.entity';
 import { Review } from './review.entity';
 import { User } from '../../users/entities/user.entity';
+import { Amenity } from './amenity.entity';
 
 @Entity('hotels')
 export class Hotel {
@@ -35,6 +36,9 @@ export class Hotel {
   @Column()
   agentId: number;
 
+  @Column({ nullable: true })
+  placeId: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -50,4 +54,12 @@ export class Hotel {
 
   @OneToMany(() => Review, (review) => review.hotel)
   reviews: Review[];
+
+  @ManyToMany(() => Amenity, amenity => amenity.hotels)
+  @JoinTable({
+    name: 'hotel_amenities',
+    joinColumn: { name: 'hotelId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'amenityId', referencedColumnName: 'id' }
+  })
+  amenities: Amenity[];
 }

@@ -54,32 +54,8 @@ export class AuthService {
     };
   }
 
-  async refreshToken(userId: number, refreshToken: string) {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-    });
-
-    if (!user || !user.refreshToken) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-
-    const refreshTokenMatches = await bcrypt.compare(
-      refreshToken,
-      user.refreshToken,
-    );
-
-    if (!refreshTokenMatches) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-
-    const tokens = await this.generateTokens(user);
-    await this.updateRefreshToken(user.id, tokens.refresh_token);
-
-    return tokens;
-  }
-
   private async generateTokens(user: User) {
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = { email: user.email, sub: user.id, role: user.role };
 
     const [access_token, refresh_token] = await Promise.all([
       this.jwtService.signAsync(payload),
@@ -98,10 +74,31 @@ export class AuthService {
     };
   }
 
-  private async updateRefreshToken(userId: number, refreshToken: string) {
-    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+  async updateRefreshToken(userId: number, refreshToken: string) {
     await this.userRepository.update(userId, {
-      refreshToken: hashedRefreshToken,
+      refreshToken: await bcrypt.hash(refreshToken, 10),
     });
+  }
+
+  async refreshToken(userId: number, refreshToken: string) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user || !user.refreshToken) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    const refreshTokenMatches = await bcrypt.compare(
+      refreshToken,
+      user.refreshToken,
+    );
+
+    if (!refreshTokenMatches) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    const tokens = await this.generateTokens(user);
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
+
+    return tokens;
   }
 }
