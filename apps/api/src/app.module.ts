@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from './modules/auth/auth.module';
 import databaseConfig from './config/database.config';
+import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { HotelsModule } from './modules/hotels/hotels.module';
+import { ReservationsModule } from './modules/reservations/reservations.module';
 
 @Module({
   imports: [
@@ -19,7 +21,9 @@ import { UsersModule } from './modules/users/users.module';
       inject: [ConfigService],
     }),
     AuthModule,
-    UsersModule
+    UsersModule,
+    HotelsModule,
+    ReservationsModule,
   ],
 })
 export class AppModule {}

@@ -1,5 +1,9 @@
 import { registerAs } from '@nestjs/config';
-import { join } from 'path';
+import { User } from '../modules/users/entities/user.entity';
+import { Hotel } from '../modules/hotels/entities/hotel.entity';
+import { Room } from '../modules/hotels/entities/room.entity';
+import { Review } from '../modules/hotels/entities/review.entity';
+import { Reservation } from '../modules/reservations/entities/reservation.entity';
 
 export default registerAs('database', () => ({
   type: 'mysql',
@@ -8,7 +12,7 @@ export default registerAs('database', () => ({
   username: process.env.DB_USERNAME || 'root',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'book_inn',
-  entities: ['dist/**/*.entity{.ts,.js}'],
+  entities: [User, Hotel, Room, Review, Reservation],
   autoLoadEntities: true,
   synchronize: process.env.NODE_ENV !== 'production',
   logging: process.env.NODE_ENV !== 'production',

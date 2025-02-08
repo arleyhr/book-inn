@@ -1,4 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, PrimaryColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Hotel } from '../../hotels/entities/hotel.entity';
+import { Review } from '../../hotels/entities/review.entity';
+import { Reservation } from '../../reservations/entities/reservation.entity';
 
 export enum UserRole {
   AGENT = 'agent',
@@ -32,12 +35,21 @@ export class User {
   @Column({ default: true })
   isActive: boolean;
 
-  @CreateDateColumn()
-  createdAt: Date;
-
   @Column({ nullable: true })
   refreshToken: string;
 
+  @CreateDateColumn()
+  createdAt: Date;
+
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => Hotel, (hotel) => hotel.agent)
+  managedHotels: Hotel[];
+
+  @OneToMany(() => Review, (review) => review.user)
+  reviews: Review[];
+
+  @OneToMany(() => Reservation, (reservation) => reservation.user)
+  reservations: Reservation[];
 }
