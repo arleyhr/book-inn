@@ -37,7 +37,7 @@
       "options": {
         "targetName": "test"
       },
-      "exclude": ["apps/book-inn-e2e/**/*"]
+      "exclude": ["apps/book-inn-e2e/**/*", "apps/api-e2e/**/*"]
     }
   ]
 }

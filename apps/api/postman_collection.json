@@ -1,0 +1,573 @@
+{
+  "info": {
+    "name": "Book Inn API",
+    "description": "API collection for Book Inn hotel management system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"agent@bookinn.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"Agent\",\n  \"role\": \"agent\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register Traveler",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"traveler@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"traveler\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.environment.set(\"access_token\", jsonData.access_token);",
+                  "pm.environment.set(\"refresh_token\", jsonData.refresh_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"agent@bookinn.com\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.environment.set(\"access_token\", jsonData.access_token);",
+                  "pm.environment.set(\"refresh_token\", jsonData.refresh_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 1,\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Hotels",
+      "item": [
+        {
+          "name": "Get All Hotels",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/hotels",
+              "host": ["{{base_url}}"],
+              "path": ["hotels"]
+            }
+          }
+        },
+        {
+          "name": "Get Hotel by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/hotels/1",
+              "host": ["{{base_url}}"],
+              "path": ["hotels", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Hotel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/hotels",
+              "host": ["{{base_url}}"],
+              "path": ["hotels"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Hotel Ejemplo\",\n  \"address\": \"Calle Principal 123\",\n  \"city\": \"Bogotá\",\n  \"country\": \"Colombia\",\n  \"latitude\": 4.710989,\n  \"longitude\": -74.072092,\n  \"isActive\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh Hotel Images",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/hotels/1/refresh-images",
+              "host": ["{{base_url}}"],
+              "path": ["hotels", "1", "refresh-images"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rooms",
+      "item": [
+        {
+          "name": "Create Room",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/hotels/1/rooms",
+              "host": ["{{base_url}}"],
+              "path": ["hotels", "1", "rooms"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"Habitación Doble\",\n  \"basePrice\": 200,\n  \"taxes\": 38,\n  \"location\": \"Piso 3\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Create Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/hotels/1/reviews",
+              "host": ["{{base_url}}"],
+              "path": ["hotels", "1", "reviews"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Excelente servicio y ubicación\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reservations",
+      "item": [
+        {
+          "name": "Create Reservation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations",
+              "host": ["{{base_url}}"],
+              "path": ["reservations"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"checkInDate\": \"2024-02-20\",\n  \"checkOutDate\": \"2024-02-25\",\n  \"guestName\": \"Juan Pérez\",\n  \"guestEmail\": \"juan@ejemplo.com\",\n  \"guestPhone\": \"+573001234567\",\n  \"emergencyContactName\": \"María Pérez\",\n  \"emergencyContactPhone\": \"+573009876543\",\n  \"roomId\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Reservations (Agent)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations",
+              "host": ["{{base_url}}"],
+              "path": ["reservations"],
+              "query": [
+                {
+                  "key": "hotelId",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "startDate",
+                  "value": "2024-02-01",
+                  "disabled": true
+                },
+                {
+                  "key": "endDate",
+                  "value": "2024-02-28",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Hotel Reservations (Agent)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations/hotel/1",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", "hotel", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Reservation Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations/1",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", "1"]
+            }
+          }
+        },
+        {
+          "name": "Confirm Reservation (Agent)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations/confirm",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", "confirm"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reservationId\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Cancel Reservation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", "cancel"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reservationId\": 1,\n  \"reason\": \"Change of plans\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Seeder",
+      "item": [
+        {
+          "name": "Generate Seed Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/seeder/generate?count=5",
+              "host": ["{{base_url}}"],
+              "path": ["seeder", "generate"],
+              "query": [
+                {
+                  "key": "count",
+                  "value": "5",
+                  "description": "Número de hoteles a generar (por defecto: 10)"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Statistics",
+      "item": [
+        {
+          "name": "Get Hotel Occupancy",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/statistics/occupancy?hotelId=1&startDate=2024-02-01&endDate=2024-02-28",
+              "host": ["{{base_url}}"],
+              "path": ["statistics", "occupancy"],
+              "query": [
+                {
+                  "key": "hotelId",
+                  "value": "1"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2024-02-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2024-02-28"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Hotel Revenue",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/statistics/revenue?hotelId=1&startDate=2024-02-01&endDate=2024-02-28",
+              "host": ["{{base_url}}"],
+              "path": ["statistics", "revenue"],
+              "query": [
+                {
+                  "key": "hotelId",
+                  "value": "1"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2024-02-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2024-02-28"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/messages",
+              "host": ["{{base_url}}"],
+              "path": ["messages"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reservationId\": 1,\n  \"message\": \"Hello, I have a question about the check-in time\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Reservation Messages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/messages/reservation/1",
+              "host": ["{{base_url}}"],
+              "path": ["messages", "reservation", "1"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
