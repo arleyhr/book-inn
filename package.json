@@ -4,9 +4,10 @@
   "license": "MIT",
   "scripts": {
     "dev": "nx run-many --target=serve --parallel --all",
-    "test": "nx test api",
-    "test:watch": "nx test api --watch",
-    "test:coverage": "nx test api --coverage"
+    "test:api": "nx test api",
+    "test:api-sdk": "nx test api-sdk",
+    "test:watch": "nx test api,api-sdk --watch",
+    "test:coverage": "nx test api,api-sdk --coverage"
   },
   "private": true,
   "dependencies": {
@@ -42,8 +43,10 @@
     "@nx/webpack": "20.4.2",
     "@nx/workspace": "20.4.2",
     "@swc-node/register": "~1.10.9",
+    "@swc/cli": "~0.3.12",
     "@swc/core": "~1.10.15",
     "@swc/helpers": "~0.5.15",
+    "@swc/jest": "~0.2.36",
     "@types/jest": "^29.5.12",
     "@types/node": "~18.16.9",
     "eslint": "^9.8.0",
