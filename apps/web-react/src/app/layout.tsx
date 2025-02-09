@@ -1,4 +1,5 @@
 import './global.css';
+import { Footer } from '../components/layout/footer';
 
 export const metadata = {
   title: 'Welcome to web-react',
@@ -12,7 +13,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <main>
+          {children}
+        </main>
+        <Footer />
+      </body>
     </html>
   );
 }
