@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "dev": "nx run-many --target=serve --parallel --all"
+    "dev": "nx run-many --target=serve --parallel --all",
+    "test": "nx test api",
+    "test:watch": "nx test api --watch",
+    "test:coverage": "nx test api --coverage"
   },
   "private": true,
   "dependencies": {
