@@ -1,10 +1,18 @@
 import { z } from 'zod';
+import type { Hotel } from '../../lib/api';
 
-export interface Hotel {
+export interface SearchHotel {
   value: string;
   label: string;
   description: string;
   image: string;
+  details?: Hotel;
+}
+
+export interface SearchParams {
+  hotel?: string;
+  checkIn?: string;
+  checkOut?: string;
 }
 
 export interface SearchBarProps {
@@ -12,22 +20,10 @@ export interface SearchBarProps {
   className?: string;
 }
 
-export interface SearchParams {
-  hotel: string;
-  checkIn: string;
-  checkOut: string;
-}
-
 export const searchFormSchema = z.object({
   hotel: z.string().min(1, 'Please select a hotel'),
-  checkIn: z.string().min(1, 'Please select a check-in date'),
-  checkOut: z.string().min(1, 'Please select a check-out date')
-}).refine((data) => {
-  if (!data.checkIn || !data.checkOut) return true;
-  return new Date(data.checkOut) > new Date(data.checkIn);
-}, {
-  message: "Check-out date must be after check-in date",
-  path: ["checkOut"]
+  checkIn: z.string().optional(),
+  checkOut: z.string().optional(),
 });
 
 export type SearchFormData = z.infer<typeof searchFormSchema>;

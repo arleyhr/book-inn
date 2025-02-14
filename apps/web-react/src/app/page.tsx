@@ -1,77 +1,86 @@
-import { Header } from '../components/layout/header';
-import { Hero } from '../components/home/hero';
-import { FeaturedHotels } from '../components/hotels/featured-hotels';
-import { SearchParams } from '../components/search/search-bar';
+import { Hero } from '../components/home/hero'
+import { FeaturedHotels } from '../components/hotels/featured-hotels'
+import { SearchParams } from '../components/search/search-bar'
+import { getFeaturedHotels } from '../lib/server-actions'
+import { redirect } from 'next/navigation'
 
-const FEATURED_HOTELS = [
-  {
-    id: 'cartagena',
-    href: '/hotels/cartagena',
-    imageUrl: 'https://images.unsplash.com/photo-1583531352515-8884af319dc1',
-    imageAlt: 'Cartagena Colonial House',
-    locations: ['Centro Histórico', 'Getsemaní', 'Bocagrande'],
-    title: 'Colonial Luxury House',
-    description: 'Historic charm meets modern luxury in the walled city',
-    pricePerNight: 450,
-    rating: 4.9,
-    gridSpan: { cols: 2, rows: 2 }
-  },
-  {
-    id: 'tayrona',
-    href: '/hotels/tayrona',
-    imageUrl: 'https://images.unsplash.com/photo-1597816751727-eae4097ce974',
-    imageAlt: 'Tayrona Eco Lodge',
-    locations: ['Parque Tayrona', 'Santa Marta'],
-    title: 'Tayrona Eco Resort',
-    description: 'Luxury eco-lodges in pristine Caribbean jungle',
-    pricePerNight: 380,
-    rating: 4.8,
-    gridSpan: { cols: 1, rows: 1 }
-  },
-  {
-    id: 'bogota',
-    href: '/hotels/bogota',
-    imageUrl: 'https://images.unsplash.com/photo-1628604426924-d1f24d333edc',
-    imageAlt: 'Bogota Penthouse',
-    locations: ['Chapinero', 'Usaquén', 'La Candelaria'],
-    title: 'Luxury City Penthouse',
-    description: 'Contemporary luxury in the heart of the capital',
-    pricePerNight: 320,
-    rating: 4.7,
-    gridSpan: { cols: 1, rows: 1 }
-  },
-  {
-    id: 'coffee-region',
-    href: '/hotels/coffee-region',
-    imageUrl: 'https://images.unsplash.com/photo-1599666433232-2b222eb02b8c',
-    imageAlt: 'Coffee Region Hacienda',
-    locations: ['Salento', 'Armenia', 'Manizales'],
-    title: 'Coffee Hacienda Resort',
-    description: 'Traditional coffee farm with luxury accommodations',
-    pricePerNight: 280,
-    rating: 4.9,
-    gridSpan: { cols: 2, rows: 2 }
-  },
-];
+const FEATURED_GRID_TEMPLATE = [
+  { cols: 2, rows: 2 },
+  { cols: 1, rows: 1 },
+  { cols: 1, rows: 2 },
+  { cols: 1, rows: 1 },
+  { cols: 1, rows: 1 },
+]
 
-export default function Home() {
+const formatDate = (date: string) => {
+  return new Date(date).toISOString().split('T')[0]
+}
+
+export default async function Home() {
   const handleSearch = async (searchParams: SearchParams) => {
-    'use server';
-    console.log('Search params:', searchParams);
-  };
+    'use server'
+    const formattedCheckIn = searchParams.checkIn ? formatDate(searchParams.checkIn) : ''
+    const formattedCheckOut = searchParams.checkOut ? formatDate(searchParams.checkOut) : ''
 
-  return (
-    <main className="min-h-screen bg-white">
-      <Header isAuthenticated={true} userName="John Doe" isAgent/>
-      <div className="pt-[56px]">
+    redirect(`/hotels/${searchParams.hotel}?checkIn=${formattedCheckIn}&checkOut=${formattedCheckOut}`)
+  }
+
+  try {
+    const featuredHotels = await getFeaturedHotels()
+
+    const mappedHotels = featuredHotels.map((hotel, index) => ({
+      id: hotel.id.toString(),
+      href: `/hotels/${hotel.id}`,
+      imageUrl: hotel.images[0],
+      imageAlt: hotel.name,
+      locations: [hotel.city],
+      title: hotel.name,
+      description: hotel.description,
+      pricePerNight: hotel.rooms[0]?.basePrice || 0,
+      rating: hotel.reviews.reduce((acc, review) => acc + review.rating, 0) / hotel.reviews.length || 0,
+      placeId: hotel.placeId,
+      gridSpan: FEATURED_GRID_TEMPLATE[index]
+    }))
+
+    return (
+      <>
         <Hero
           onSearch={handleSearch}
           backgroundImage="/room-bg.jpg"
           title="Experience Luxury Beyond Imagination"
           subtitle="From boutique hotels to exclusive resorts, find your perfect escape in Colombia's most stunning locations"
         />
-        <FeaturedHotels hotels={FEATURED_HOTELS} />
-      </div>
-    </main>
-  );
+        <FeaturedHotels hotels={mappedHotels} />
+      </>
+    )
+  } catch (error) {
+    console.error('Error fetching featured hotels:', error)
+    return (
+      <>
+        <Hero
+          onSearch={handleSearch}
+          backgroundImage="/room-bg.jpg"
+          title="Experience Luxury Beyond Imagination"
+          subtitle="From boutique hotels to exclusive resorts, find your perfect escape in Colombia's most stunning locations"
+        />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+          <div className="rounded-lg bg-red-50 p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">Error loading featured hotels</h3>
+                <div className="mt-2 text-sm text-red-700">
+                  {error instanceof Error ? error.message : 'An unexpected error occurred. Please try again later.'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    )
+  }
 }

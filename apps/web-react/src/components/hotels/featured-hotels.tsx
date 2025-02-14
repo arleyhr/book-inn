@@ -48,12 +48,12 @@ export function FeaturedHotels({ hotels }: FeaturedHotelsProps) {
           </svg>
         </Link>
       </div>
-      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 auto-rows-[300px]">
         {enhancedHotels.map((hotel) => (
           <FeaturedHotel
             key={hotel.id}
             {...hotel}
-            className={`${hotel.gridSpan?.cols === 2 ? 'sm:col-span-2' : ''} ${hotel.gridSpan?.rows === 2 ? 'row-span-2' : ''}`}
+            className={`${hotel.gridSpan?.cols === 2 ? 'lg:col-span-2' : ''} ${hotel.gridSpan?.rows === 2 ? 'row-span-2' : ''}`}
           />
         ))}
       </div>

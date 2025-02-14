@@ -1,3 +1,6 @@
+import Link from 'next/link';
+import { getHotelImageUrl, getImageAspectRatio } from '../../lib/images'
+
 export interface FeaturedHotelProps {
   id: string;
   href: string;
@@ -8,6 +11,7 @@ export interface FeaturedHotelProps {
   description: string;
   pricePerNight: number;
   rating: number;
+  placeId?: string;
   gridSpan?: {
     cols: number;
     rows: number;
@@ -24,13 +28,17 @@ export function FeaturedHotel({
   description,
   pricePerNight,
   rating,
+  placeId,
+  gridSpan = { cols: 1, rows: 1 },
   className = '',
 }: FeaturedHotelProps) {
+  const aspectRatio = getImageAspectRatio(gridSpan)
+
   return (
-    <div className={`group relative overflow-hidden rounded-2xl bg-gray-100 ${className}`}>
-      <div className="aspect-h-1 aspect-w-1 w-full">
+    <Link href={href} className={`group relative overflow-hidden rounded-2xl bg-gray-100 h-full ${className}`}>
+      <div className="absolute inset-0">
         <img
-          src={imageUrl}
+          src={getHotelImageUrl(placeId, imageUrl)}
           alt={imageAlt}
           className="h-full w-full object-cover object-center transition duration-300 group-hover:scale-105"
         />
@@ -45,10 +53,8 @@ export function FeaturedHotel({
           ))}
         </div>
         <h3 className="mt-2 text-xl font-semibold text-white">
-          <a href={href}>
-            <span className="absolute inset-0" />
-            {title}
-          </a>
+          <span className="absolute inset-0" />
+          {title}
         </h3>
         <p className="mt-2 text-sm text-gray-300">{description}</p>
         <div className="mt-2 flex items-center gap-4">
@@ -59,6 +65,6 @@ export function FeaturedHotel({
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

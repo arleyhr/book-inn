@@ -1,115 +1,88 @@
-type State = {
-  isFocused: boolean;
-  isDisabled: boolean;
-  menuIsOpen: boolean;
-  hasError?: boolean;
-};
+import type { StylesConfig, CSSObjectWithLabel } from 'react-select'
 
-export const customSelectStyles = {
-  control: (
-    base: any,
-    state: State,
-  ) => ({
+interface CustomControlProps {
+  hasError?: boolean;
+  isFocused?: boolean;
+}
+
+export const customSelectStyles: StylesConfig<any, false> = {
+  control: (base: CSSObjectWithLabel, state: CustomControlProps) => ({
     ...base,
     minHeight: '68px',
-    height: '68px',
-    borderRadius: '16px',
-    border: state.hasError
-      ? '1px solid rgb(244 63 94)'
-      : '1px solid rgb(229 231 235)',
+    backgroundColor: 'rgba(31, 41, 55, 0.8)',
+    border: '1px solid',
+    borderColor: state.hasError ? 'rgb(239, 68, 68)' : state.isFocused ? 'rgb(96, 165, 250)' : 'rgb(55, 65, 81)',
+    borderRadius: '1rem',
     boxShadow: 'none',
-    transition: 'all 0.2s ease',
-    backgroundColor: state.isFocused ? 'white' : 'rgba(255, 255, 255, 0.8)',
+    padding: '0 1rem',
+    paddingLeft: '3rem',
+    transition: 'all 150ms',
     '&:hover': {
-      borderColor: state.hasError ? 'rgb(244 63 94)' : 'rgb(59 130 246)',
-      backgroundColor: 'white',
-      borderWidth: state.hasError ? '2px' : '1px',
+      borderColor: state.hasError ? 'rgb(239, 68, 68)' : 'rgb(96, 165, 250)',
+      backgroundColor: 'rgb(31, 41, 55)',
     },
-    borderColor: state.hasError
-      ? 'rgb(244 63 94)'
-      : state.isFocused
-        ? 'rgb(59 130 246)'
-        : 'rgb(229 231 235)',
-    padding: state.hasError ? '3px' : '4px',
-    cursor: 'text',
-    position: 'relative',
-    outline: state.isFocused && !state.hasError ? '2px solid rgb(59 130 246)' : 'none',
-    outlineOffset: state.isFocused ? '-2px' : '0',
   }),
-  menu: (base: any) => ({
+  menu: (base) => ({
     ...base,
-    borderRadius: '16px',
+    backgroundColor: 'rgb(31, 41, 55)',
+    border: '1px solid rgb(55, 65, 81)',
+    borderRadius: '1rem',
+    boxShadow: '0 10px 40px -5px rgba(0,0,0,0.3)',
     overflow: 'hidden',
-    border: '1px solid rgb(229 231 235)',
-    boxShadow: '0 10px 40px -5px rgba(0,0,0,0.15)',
-    marginTop: '8px',
+    animation: 'selectMenuAppear 150ms ease',
+    padding: '0.5rem',
     zIndex: 50,
-    animation: 'selectMenuAppear 0.2s ease',
   }),
-  menuList: (base: any) => ({
-    ...base,
-    padding: '4px',
-  }),
-  option: (base: any) => ({
+  menuList: (base) => ({
     ...base,
     padding: 0,
+  }),
+  option: (base, { isFocused, isSelected }) => ({
+    ...base,
+    backgroundColor: isSelected ? 'rgb(37, 99, 235)' : isFocused ? 'rgba(37, 99, 235, 0.1)' : 'transparent',
+    color: isSelected ? 'white' : 'rgb(209, 213, 219)',
+    padding: '0.75rem 1rem',
+    borderRadius: '0.5rem',
     cursor: 'pointer',
-    backgroundColor: 'transparent',
-  }),
-  input: (base: any) => ({
-    ...base,
-    color: 'rgb(55 65 81)',
-    margin: 0,
-    padding: 0,
-    position: 'absolute',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    left: '44px',
-  }),
-  placeholder: (base: any) => ({
-    ...base,
-    color: 'rgb(156 163 175)',
-    position: 'absolute',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    left: '44px',
-    fontSize: '15px',
-  }),
-  valueContainer: (base: any) => ({
-    ...base,
-    padding: 0,
-    paddingLeft: '44px',
-    height: '60px',
-    position: 'relative',
-  }),
-  singleValue: (base: any) => ({
-    ...base,
-    position: 'relative',
-    transform: 'none',
-    top: 'auto',
-    maxWidth: '100%',
-    height: '100%',
-    padding: 0,
-    margin: 0,
-  }),
-  indicatorsContainer: (base: any) => ({
-    ...base,
-    position: 'absolute',
-    right: '0',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    display: 'flex',
-    alignItems: 'center',
-  }),
-  clearIndicator: (base: any) => ({
-    ...base,
-    padding: '4px',
-    cursor: 'pointer',
-    position: 'relative',
-    right: 0,
-    color: 'rgb(156 163 175)',
-    '&:hover': {
-      color: 'rgb(107 114 128)',
+    '&:active': {
+      backgroundColor: 'rgb(37, 99, 235)',
     },
   }),
-} as const;
+  input: (base) => ({
+    ...base,
+    color: 'rgb(209, 213, 219)',
+    margin: 0,
+    padding: 0,
+  }),
+  valueContainer: (base) => ({
+    ...base,
+    padding: 0,
+  }),
+  singleValue: (base) => ({
+    ...base,
+    color: 'rgb(209, 213, 219)',
+    margin: 0,
+  }),
+  placeholder: (base) => ({
+    ...base,
+    color: 'rgb(156, 163, 175)',
+    margin: 0,
+  }),
+  noOptionsMessage: (base) => ({
+    ...base,
+    color: 'rgb(156, 163, 175)',
+  }),
+  loadingMessage: (base) => ({
+    ...base,
+    color: 'rgb(156, 163, 175)',
+  }),
+  clearIndicator: (base) => ({
+    ...base,
+    color: 'rgb(156, 163, 175)',
+    cursor: 'pointer',
+    padding: '8px',
+    '&:hover': {
+      color: 'rgb(209, 213, 219)',
+    },
+  }),
+}

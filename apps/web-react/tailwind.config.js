@@ -3,6 +3,7 @@ const { join } = require('path');
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     join(
       __dirname,
@@ -13,7 +14,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-plus-jakarta)', 'system-ui', 'sans-serif'],
         display: ['Cormorant Garamond', 'serif'],
       },
     },
