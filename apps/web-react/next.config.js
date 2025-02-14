@@ -2,11 +2,14 @@
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { composePlugins, withNx } = require('@nx/next');
+const path = require('path');
 
 /**
  * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
  **/
 const nextConfig = {
+  'output': 'standalone',
+  'outputFileTracingRoot': path.join(__dirname, '../../'),
   nx: {
     // Set this to true if you would like to use SVGR
     // See: https://github.com/gregberge/svgr
