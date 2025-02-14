@@ -7,7 +7,9 @@ on:
     branches: [ main ]
 
 env:
-  NODE_VERSION: '18.x'
+  NODE_VERSION: '20.x'
+  PROJECT_NAME: 'bookinn'
+  ENVIRONMENT: 'production'
   NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
 
 jobs:
@@ -44,8 +46,17 @@ jobs:
       if: github.ref == 'refs/heads/main'
       run: |
         cd terraform
+        # Crear archivo tfvars temporal para el storage
+        cat > initial.tfvars <<EOF
+        project_name = "${{ env.PROJECT_NAME }}"
+        environment = "${{ env.ENVIRONMENT }}"
+        location = "eastus"
+        db_admin_username = "${{ secrets.DB_ADMIN_USERNAME }}"
+        db_admin_password = "${{ secrets.DB_ADMIN_PASSWORD }}"
+        EOF
+
         terraform init -backend=false
-        terraform apply -auto-approve -target=azurerm_storage_account.tfstate
+        terraform apply -auto-approve -target=azurerm_storage_account.tfstate -var-file=initial.tfvars
       env:
         ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
         ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
