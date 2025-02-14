@@ -8,11 +8,11 @@ import { Reservation } from '../modules/reservations/entities/reservation.entity
 const databaseUrl = process.env.DATABASE_URL;
 
 const databaseConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '3306', 10),
-  username: process.env.DB_USERNAME || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'book_inn',
+  host: process.env.DB_HOST || process.env.AZURE_MYSQL_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT || process.env.AZURE_MYSQL_PORT || '3306', 10),
+  username: process.env.DB_USERNAME || process.env.AZURE_MYSQL_USER || 'root',
+  password: process.env.DB_PASSWORD || process.env.AZURE_MYSQL_PASSWORD || '',
+  database: process.env.DB_NAME || process.env.AZURE_MYSQL_DATABASE || 'book_inn',
 }
 
 const dabaseConfigUrl = {
