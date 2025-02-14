@@ -1,9 +1,10 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { Hotel } from '../../hotels/entities/hotel.entity';
 import { Review } from '../../hotels/entities/review.entity';
 import { Reservation } from '../../reservations/entities/reservation.entity';
 import { ReservationMessage } from '../../reservations/entities/message.entity';
-
+import { Exclude } from 'class-transformer';
 export enum UserRole {
   AGENT = 'agent',
   TRAVELER = 'traveler',
@@ -23,7 +24,8 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ select: false })
+  @Exclude()
   password: string;
 
   @Column({
@@ -36,7 +38,8 @@ export class User {
   @Column({ default: true })
   isActive: boolean;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
+  @Exclude()
   refreshToken: string;
 
   @CreateDateColumn()
@@ -62,4 +65,8 @@ export class User {
 
   @OneToMany(() => ReservationMessage, (message) => message.sender)
   sentMessages: ReservationMessage[];
+
+  comparePassword(password: string): Promise<boolean> {
+    return bcrypt.compare(password, this.password)
+  }
 }

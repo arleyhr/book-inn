@@ -1,4 +1,33 @@
-import { IsString, IsNotEmpty, IsBoolean, IsOptional, IsNumber, Max, Min, IsArray } from 'class-validator';
+import { IsString, IsNotEmpty, IsBoolean, IsOptional, IsNumber, Max, Min, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class CreateRoomDto {
+  @IsNumber()
+  @IsOptional()
+  id?: number;
+
+  @IsString()
+  @IsNotEmpty()
+  type: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @Min(0)
+  basePrice: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @Min(0)
+  taxes: number;
+
+  @IsString()
+  @IsNotEmpty()
+  location: string;
+
+  @IsBoolean()
+  @IsOptional()
+  isAvailable?: boolean;
+}
 
 export class CreateHotelDto {
   @IsString()
@@ -39,10 +68,16 @@ export class CreateHotelDto {
   isActive?: boolean;
 
   @IsNumber()
-  @IsNotEmpty()
-  agentId: number;
+  @IsOptional()
+  agentId?: number;
 
   @IsString()
   @IsOptional()
   placeId?: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateRoomDto)
+  @IsOptional()
+  rooms?: CreateRoomDto[];
 }

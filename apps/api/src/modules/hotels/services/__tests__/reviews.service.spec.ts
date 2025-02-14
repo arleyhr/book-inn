@@ -63,7 +63,7 @@ describe('ReviewsService', () => {
 
     it('should handle validation of rating', async () => {
       const createReviewDto = {
-        rating: 6, // Rating mayor a 5 debería fallar
+        rating: 6,
         comment: 'Great hotel!',
         userId: 1,
         hotelId: 1,

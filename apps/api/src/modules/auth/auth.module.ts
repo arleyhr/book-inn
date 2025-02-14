@@ -7,6 +7,7 @@ import { User } from '../users/entities/user.entity';
 import { AuthController } from './controllers/auth.controller';
 import { AuthService } from './services/auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get('JWT_SECRET') || 'secret',
-      signOptions: { expiresIn: '1d' },
+        signOptions: { expiresIn: '1d' },
       }),
       inject: [ConfigService],
     }),
@@ -25,6 +26,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
   providers: [
     AuthService,
     JwtStrategy,
+    JwtAuthGuard,
     {
       provide: 'JWT_REFRESH_TOKEN_SECRET',
       useFactory: (configService: ConfigService) =>
@@ -32,6 +34,6 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       inject: [ConfigService],
     },
   ],
-  exports: [AuthService, PassportModule, JwtModule],
+  exports: [AuthService, PassportModule, JwtModule, JwtAuthGuard],
 })
 export class AuthModule {}

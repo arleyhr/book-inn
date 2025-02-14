@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards, ForbiddenException, Patch, ParseIntPipe, BadRequestException } from '@nestjs/common';
 import { ReservationsService } from '../services/reservations.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
@@ -7,8 +7,10 @@ import { ListReservationsDto } from '../dto/list-reservations.dto';
 import { CreateReservationDto } from '../dto/create-reservation.dto';
 import { CancelReservationDto } from '../dto/cancel-reservation.dto';
 import { ConfirmReservationDto } from '../dto/confirm-reservation.dto';
+import { UpdateReservationStatusDto } from '../dto/update-reservation-status.dto';
 import { GetUser } from '../../auth/decorators/get-user.decorator';
 import { User } from '../../users/entities/user.entity';
+import { Public } from '../../auth/decorators/public.decorator';
 
 @Controller('reservations')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -69,5 +71,37 @@ export class ReservationsController {
       user.id,
       user.role === 'agent',
     );
+  }
+
+  @Patch(':id/status')
+  @Roles('agent')
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() updateStatusDto: UpdateReservationStatusDto,
+    @GetUser() user: User,
+  ) {
+    return this.reservationsService.updateStatus(+id, updateStatusDto.status, user.id);
+  }
+
+  @Get('fetch/validate-availability')
+  @Public()
+  async validateRoomAvailability(
+    @Query('hotelId', ParseIntPipe) hotelId: number,
+    @Query('checkIn') checkIn: string,
+    @Query('checkOut') checkOut: string,
+  ) {
+    if (!hotelId || !checkIn || !checkOut) {
+      throw new BadRequestException('hotelId, checkIn and checkOut are required');
+    }
+
+    try {
+      return this.reservationsService.validateRoomAvailability(
+        hotelId,
+        checkIn,
+        checkOut
+      );
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 }

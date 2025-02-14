@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -17,6 +17,14 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
+    const existingUser = await this.userRepository.findOne({
+      where: { email: registerDto.email }
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Email already exists');
+    }
+
     const { password, ...userData } = registerDto;
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -33,13 +41,14 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const user = await this.userRepository.findOne({
       where: { email: loginDto.email },
+      select: ['id', 'email', 'password', 'role', 'firstName', 'lastName', 'refreshToken']
     });
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+    const isPasswordValid = await user.comparePassword(loginDto.password);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
@@ -50,7 +59,13 @@ export class AuthService {
 
     return {
       ...tokens,
-      user: { id: user.id, email: user.email, role: user.role },
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName
+      },
     };
   }
 
@@ -100,5 +115,21 @@ export class AuthService {
     await this.updateRefreshToken(user.id, tokens.refresh_token);
 
     return tokens;
+  }
+
+  async getCurrentUser(userId: number) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      firstName: user.firstName,
+      lastName: user.lastName
+    };
   }
 }

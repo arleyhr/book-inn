@@ -12,6 +12,7 @@ export class GooglePlacesService {
   private readonly logger = new Logger(GooglePlacesService.name);
   private readonly cacheDir = 'uploads/hotels';
   private readonly cacheDuration = 24 * 60 * 60 * 1000;
+  private readonly axios = axios;
 
   constructor(private readonly configService: ConfigService) {
     this.apiKey = this.configService.get<string>('GOOGLE_PLACES_API_KEY');
@@ -47,7 +48,7 @@ export class GooglePlacesService {
 
   async searchHotels(city: string) {
     try {
-      const response = await axios.get(`${this.baseUrl}/textsearch/json`, {
+      const response = await this.axios.get(`${this.baseUrl}/textsearch/json`, {
         params: {
           query: `hoteles en ${city} Colombia`,
           type: 'lodging',
@@ -56,10 +57,17 @@ export class GooglePlacesService {
         },
       });
 
+      if (!response.data?.results) {
+        throw new Error('Invalid response from Google Places API');
+      }
+
       return response.data.results;
     } catch (error) {
       this.logger.error('Error searching hotels:', error);
-      throw error;
+      if (error.message === 'Invalid response from Google Places API') {
+        throw error;
+      }
+      throw new Error('Error searching hotels');
     }
   }
 
@@ -67,7 +75,7 @@ export class GooglePlacesService {
     try {
       this.logger.debug(`Getting place details for ID: ${placeId}`);
 
-      const response = await axios.get(`${this.baseUrl}/details/json`, {
+      const response = await this.axios.get(`${this.baseUrl}/details/json`, {
         params: {
           place_id: placeId,
           key: this.apiKey,
@@ -109,7 +117,11 @@ export class GooglePlacesService {
     } catch (error) {
       this.logger.error('Error getting place details:', error);
       this.logger.error('Error response:', error.response?.data);
-      throw error;
+      if (error.message === 'Invalid response from Google Places API' ||
+          error.message === 'Missing required place details') {
+        throw error;
+      }
+      throw new Error('Error getting place details');
     }
   }
 
@@ -167,7 +179,7 @@ export class GooglePlacesService {
   private async downloadAndCachePhoto(photoReference: string): Promise<string> {
     try {
       const photoUrl = this.getPhotoUrl(photoReference);
-      const response = await axios.get(photoUrl, { responseType: 'arraybuffer' });
+      const response = await this.axios.get(photoUrl, { responseType: 'arraybuffer' });
 
       const filePath = this.getCacheFilePath(photoReference);
       await fs.promises.writeFile(filePath, response.data);
@@ -175,7 +187,7 @@ export class GooglePlacesService {
       return `/${this.cacheDir}/${this.generateCacheFileName(photoReference)}`;
     } catch (error) {
       this.logger.error(`Error downloading photo ${photoReference}:`, error);
-      return null;
+      throw new Error('Error downloading photo');
     }
   }
 
@@ -221,6 +233,21 @@ export class GooglePlacesService {
     } catch (error) {
       this.logger.error(`Error refreshing photos for place ${placeId}:`, error);
       return [];
+    }
+  }
+
+  async downloadPhoto(photoReference: string): Promise<string> {
+    try {
+      const filePath = this.getCacheFilePath(photoReference);
+
+      if (this.isCacheValid(filePath)) {
+        return `/${this.cacheDir}/${this.generateCacheFileName(photoReference)}`;
+      }
+
+      return this.downloadAndCachePhoto(photoReference);
+    } catch (error) {
+      this.logger.error(`Error downloading photo ${photoReference}:`, error);
+      throw new Error('Error downloading photo');
     }
   }
 }

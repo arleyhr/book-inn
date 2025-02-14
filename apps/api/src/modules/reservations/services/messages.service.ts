@@ -56,7 +56,23 @@ export class MessagesService {
 
     return this.messageRepository.find({
       where: { reservationId },
-      relations: ['sender'],
+      relations: {
+        sender: true
+      },
+      select: {
+        id: true,
+        message: true,
+        senderId: true,
+        reservationId: true,
+        createdAt: true,
+        sender: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          role: true
+        }
+      },
       order: { createdAt: 'ASC' },
     });
   }

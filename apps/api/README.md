@@ -10,11 +10,79 @@ All endpoints require JWT authentication except for login and registration. Incl
 Authorization: Bearer <your_jwt_token>
 ```
 
+### Authentication Endpoints
+
+#### Register
+```http
+POST /auth/register
+```
+Register a new user.
+
+**Request Body:**
+```json
+{
+  "firstName": "string",
+  "lastName": "string",
+  "email": "string",
+  "password": "string",
+  "role": "agent | traveler"
+}
+```
+
+#### Login
+```http
+POST /auth/login
+```
+Login with email and password.
+
+**Request Body:**
+```json
+{
+  "email": "string",
+  "password": "string"
+}
+```
+
+**Response:**
+```json
+{
+  "access_token": "string",
+  "refresh_token": "string",
+  "user": {
+    "id": "number",
+    "email": "string",
+    "role": "string",
+    "firstName": "string",
+    "lastName": "string"
+  }
+}
+```
+
+#### Refresh Token
+```http
+POST /auth/refresh
+```
+Get new access token using refresh token.
+
+**Request Body:**
+```json
+{
+  "userId": "number",
+  "refreshToken": "string"
+}
+```
+
+#### Get Current User
+```http
+GET /auth/me
+```
+Get current authenticated user information.
+
 ## Role-Based Access
 
 The API implements role-based access control with two main roles:
 - `agent`: Hotel managers/travel agents
-- `user`: Regular users/travelers
+- `traveler`: Regular users/travelers
 
 ## API Endpoints
 
@@ -49,13 +117,22 @@ Create a new hotel.
   "longitude": "number",
   "images": "string[]",
   "isActive": "boolean",
-  "agentId": "number"
+  "placeId": "string",
+  "rooms": [
+    {
+      "type": "string",
+      "basePrice": "number",
+      "taxes": "number",
+      "location": "string",
+      "isAvailable": "boolean"
+    }
+  ]
 }
 ```
 
 #### Update Hotel (Agent Only)
 ```http
-PUT /hotels/:id
+PATCH /hotels/:id
 ```
 Update an existing hotel.
 
@@ -76,33 +153,31 @@ Query Parameters:
 - `country` (optional): Filter by country name
 - `checkIn` (optional): Check-in date (YYYY-MM-DD)
 - `checkOut` (optional): Check-out date (YYYY-MM-DD)
-- `guests` (optional): Number of guests
 - `name` (optional): Hotel name search
 - `minPrice` (optional): Minimum room price
 - `maxPrice` (optional): Maximum room price
 - `rating` (optional): Minimum hotel rating (1-5)
 
-Example:
+#### Get Featured Hotels
 ```http
-GET /hotels/search?city=Bogota&checkIn=2024-04-01&checkOut=2024-04-05&guests=2&minPrice=100&maxPrice=300&rating=4
+GET /hotels/featured
 ```
+Returns a random selection of active hotels.
 
-Response:
-```json
-[
-  {
-    "id": 1,
-    "name": "Hotel Example",
-    "address": "123 Main St",
-    "city": "Bogota",
-    "country": "Colombia",
-    "rating": 4.5,
-    "rooms": [...],
-    "amenities": [...],
-    "reviews": [...]
-  }
-]
+Query Parameters:
+- `limit` (optional): Number of hotels to return (default: 6)
+
+#### Get Agent Hotels (Agent Only)
+```http
+GET /hotels/fetch/by-agent
 ```
+Returns all hotels managed by the authenticated agent.
+
+#### Toggle Room Availability (Agent Only)
+```http
+PUT /hotels/:hotelId/rooms/:roomId/toggle
+```
+Enable or disable a room.
 
 ### Rooms Management
 
@@ -135,12 +210,6 @@ PUT /hotels/:hotelId/rooms/:id
 ```
 Update room details.
 
-#### Toggle Room Availability (Agent Only)
-```http
-PATCH /hotels/:hotelId/rooms/:id/toggle
-```
-Enable or disable a room.
-
 ### Reservations Management
 
 #### List Agent's Reservations (Agent Only)
@@ -154,66 +223,17 @@ Query Parameters:
 - `startDate` (optional): Filter reservations starting from this date (YYYY-MM-DD)
 - `endDate` (optional): Filter reservations until this date (YYYY-MM-DD)
 
-Example Requests:
-```http
-# Get all reservations
-GET /reservations
-
-# Get reservations for a specific hotel
-GET /reservations?hotelId=123
-
-# Get reservations for a date range
-GET /reservations?startDate=2024-03-01&endDate=2024-03-31
-
-# Combined filters
-GET /reservations?hotelId=123&startDate=2024-03-01&endDate=2024-03-31
-```
-
-Response:
-```json
-[
-  {
-    "id": 1,
-    "checkInDate": "2024-03-15",
-    "checkOutDate": "2024-03-20",
-    "guestName": "John Doe",
-    "guestEmail": "john@example.com",
-    "guestPhone": "+1234567890",
-    "emergencyContactName": "Jane Doe",
-    "emergencyContactPhone": "+1987654321",
-    "room": {
-      "id": 1,
-      "type": "Double",
-      "basePrice": 150,
-      "hotel": {
-        "id": 123,
-        "name": "Hotel Example"
-      }
-    }
-  }
-]
-```
-
 #### Get Hotel Reservations (Agent Only)
 ```http
 GET /reservations/hotel/:hotelId
 ```
 Returns all reservations for a specific hotel.
 
-Response includes the same fields as the list endpoint.
-
 #### Get Reservation Details
 ```http
 GET /reservations/:id
 ```
 Returns detailed information about a specific reservation.
-
-Response includes:
-- Reservation details (check-in/out dates)
-- Guest information
-- Room details
-- Hotel information
-- Emergency contact information
 
 #### Create Reservation
 ```http
@@ -224,8 +244,8 @@ Create a new reservation.
 **Request Body:**
 ```json
 {
-  "checkInDate": "2024-02-20",
-  "checkOutDate": "2024-02-25",
+  "checkInDate": "string (YYYY-MM-DD)",
+  "checkOutDate": "string (YYYY-MM-DD)",
   "guestName": "string",
   "guestEmail": "string",
   "guestPhone": "string",
@@ -262,35 +282,51 @@ Cancel a reservation. Travelers can only cancel their own reservations and not w
 }
 ```
 
-Response includes:
-- Reservation details (check-in/out dates, status)
-- Guest information
-- Room details
-- Hotel information
-- Emergency contact information
-- Cancellation/confirmation details if applicable
-
-### Reviews Management
-
-#### List Hotel Reviews
+#### Update Reservation Status (Agent Only)
 ```http
-GET /hotels/:hotelId/reviews
+PATCH /reservations/:id/status
 ```
-Returns all reviews for a specific hotel.
-
-#### Create Review (Authenticated Users)
-```http
-POST /hotels/:hotelId/reviews
-```
-Create a new review for a hotel.
+Update the status of a reservation.
 
 **Request Body:**
 ```json
 {
-  "rating": "number",
-  "comment": "string"
+  "status": "pending | confirmed | cancelled | completed"
 }
 ```
+
+#### Validate Room Availability
+```http
+GET /reservations/fetch/validate-availability
+```
+Check if a room is available for the specified dates.
+
+Query Parameters:
+- `hotelId`: Hotel ID
+- `checkIn`: Check-in date (YYYY-MM-DD)
+- `checkOut`: Check-out date (YYYY-MM-DD)
+
+### Messages
+
+#### Send Message
+```http
+POST /messages
+```
+Send a message in the context of a reservation.
+
+**Request Body:**
+```json
+{
+  "reservationId": "number",
+  "message": "string"
+}
+```
+
+#### Get Reservation Messages
+```http
+GET /messages/reservation/:reservationId
+```
+Get all messages for a specific reservation.
 
 ### Statistics (Agent Only)
 
@@ -308,10 +344,10 @@ Query Parameters:
 Response:
 ```json
 {
-  "totalRooms": 20,
-  "occupiedRooms": 15,
-  "occupancyRate": 75,
-  "upcomingReservations": 5
+  "totalRooms": "number",
+  "occupiedRooms": "number",
+  "occupancyRate": "number",
+  "upcomingReservations": "number"
 }
 ```
 
@@ -329,52 +365,11 @@ Query Parameters:
 Response:
 ```json
 {
-  "totalRevenue": 15000,
-  "periodRevenue": 5000,
-  "averageRoomRate": 200,
-  "reservationsCount": 75
+  "totalRevenue": "number",
+  "periodRevenue": "number",
+  "averageRoomRate": "number",
+  "reservationsCount": "number"
 }
-```
-
-### Messages
-
-#### Send Message
-```http
-POST /messages
-```
-Send a message in the context of a reservation. Only the agent and the traveler involved in the reservation can send messages, and only while the reservation is active (not cancelled or completed).
-
-**Request Body:**
-```json
-{
-  "reservationId": "number",
-  "message": "string"
-}
-```
-
-#### Get Reservation Messages
-```http
-GET /messages/reservation/:reservationId
-```
-Get all messages for a specific reservation. Only the agent and the traveler involved in the reservation can view the messages.
-
-Response:
-```json
-[
-  {
-    "id": 1,
-    "message": "Hello, I have a question about the check-in time",
-    "senderId": 2,
-    "reservationId": 1,
-    "createdAt": "2024-02-20T15:30:00Z",
-    "sender": {
-      "id": 2,
-      "firstName": "John",
-      "lastName": "Doe",
-      "role": "traveler"
-    }
-  }
-]
 ```
 
 ## Error Responses
@@ -426,6 +421,11 @@ npm install
 ```bash
 cp .env.example .env
 ```
+
+Required environment variables:
+- `JWT_SECRET`: Secret key for JWT access tokens
+- `JWT_REFRESH_TOKEN_SECRET`: Secret key for JWT refresh tokens
+- `DATABASE_URL`: PostgreSQL connection URL
 
 3. Run the development server:
 ```bash

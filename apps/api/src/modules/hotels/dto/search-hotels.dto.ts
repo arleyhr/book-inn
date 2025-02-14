@@ -21,12 +21,6 @@ export class SearchHotelsDto {
   checkOut?: Date;
 
   @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(1)
-  guests?: number;
-
-  @IsOptional()
   @IsString()
   name?: string;
 
