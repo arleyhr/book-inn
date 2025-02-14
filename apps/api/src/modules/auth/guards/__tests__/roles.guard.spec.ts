@@ -58,7 +58,7 @@ describe('RolesGuard', () => {
     expect(guard.canActivate(mockExecutionContext)).toBe(false);
   });
 
-  it('should deny access when user is not present', () => {
+  it('should deny access when user is not present in request', () => {
     const mockRequest = {
       user: undefined
     };

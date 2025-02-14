@@ -18,13 +18,16 @@ export interface HttpClient {
   delete<T = unknown>(url: string, config?: HttpRequestConfig): Promise<HttpResponse<T>>;
   setHeader(name: string, value: string): void;
   removeHeader(name: string): void;
+  getHeader(name: string): string | undefined;
 }
 
 export class AxiosHttpClient implements HttpClient {
   private instance: import('axios').AxiosInstance;
+  private headers: Record<string, string> = {};
 
   constructor(config: HttpRequestConfig) {
     this.instance = require('axios').default.create(config);
+    this.headers = config.headers || {};
   }
 
   async get<T = unknown>(url: string, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
@@ -53,11 +56,17 @@ export class AxiosHttpClient implements HttpClient {
   }
 
   setHeader(name: string, value: string): void {
+    this.headers[name] = value;
     this.instance.defaults.headers.common[name] = value;
   }
 
   removeHeader(name: string): void {
+    delete this.headers[name];
     delete this.instance.defaults.headers.common[name];
+  }
+
+  getHeader(name: string): string | undefined {
+    return this.headers[name];
   }
 
   private normalizeResponse<T>(response: import('axios').AxiosResponse<T>): HttpResponse<T> {
@@ -108,6 +117,10 @@ export class AngularHttpClient implements HttpClient {
     if (this.config.headers) {
       delete this.config.headers[name];
     }
+  }
+
+  getHeader(name: string): string | undefined {
+    return this.config.headers?.[name];
   }
 
   private getFullUrl(path: string): string {

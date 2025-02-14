@@ -7,7 +7,7 @@
   "variable": [
     {
       "key": "base_url",
-      "value": "http://localhost:3000/api",
+      "value": "http://localhost:3000",
       "type": "string"
     },
     {
@@ -134,6 +134,23 @@
               "raw": "{\n  \"userId\": 1,\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
             }
           }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            }
+          }
         }
       ]
     },
@@ -175,6 +192,96 @@
           }
         },
         {
+          "name": "Search Hotels",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/hotels/search?city=Bogota&checkIn=2024-04-01&checkOut=2024-04-05&minPrice=100&maxPrice=300&rating=4",
+              "host": ["{{base_url}}"],
+              "path": ["hotels", "search"],
+              "query": [
+                {
+                  "key": "city",
+                  "value": "Bogota",
+                  "description": "Filter by city"
+                },
+                {
+                  "key": "country",
+                  "value": "Colombia",
+                  "description": "Filter by country",
+                  "disabled": true
+                },
+                {
+                  "key": "checkIn",
+                  "value": "2024-04-01",
+                  "description": "Check-in date"
+                },
+                {
+                  "key": "checkOut",
+                  "value": "2024-04-05",
+                  "description": "Check-out date"
+                },
+                {
+                  "key": "minPrice",
+                  "value": "100",
+                  "description": "Minimum price"
+                },
+                {
+                  "key": "maxPrice",
+                  "value": "300",
+                  "description": "Maximum price"
+                },
+                {
+                  "key": "rating",
+                  "value": "4",
+                  "description": "Minimum rating"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Featured Hotels",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/hotels/featured?limit=4",
+              "host": ["{{base_url}}"],
+              "path": ["hotels", "featured"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "4",
+                  "description": "Number of hotels to return"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Agent Hotels",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/hotels/fetch/by-agent",
+              "host": ["{{base_url}}"],
+              "path": ["hotels", "fetch", "by-agent"]
+            }
+          }
+        },
+        {
           "name": "Create Hotel",
           "request": {
             "method": "POST",
@@ -195,14 +302,39 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Hotel Ejemplo\",\n  \"address\": \"Calle Principal 123\",\n  \"city\": \"Bogotá\",\n  \"country\": \"Colombia\",\n  \"latitude\": 4.710989,\n  \"longitude\": -74.072092,\n  \"isActive\": true\n}"
+              "raw": "{\n  \"name\": \"Hotel Example\",\n  \"address\": \"123 Main St\",\n  \"city\": \"Bogota\",\n  \"country\": \"Colombia\",\n  \"latitude\": 4.710989,\n  \"longitude\": -74.072092,\n  \"isActive\": true,\n  \"placeId\": \"ChIJL5\",\n  \"rooms\": [\n    {\n      \"type\": \"Double\",\n      \"basePrice\": 150,\n      \"taxes\": 20,\n      \"location\": \"2nd Floor\",\n      \"isAvailable\": true\n    }\n  ]\n}"
             }
           }
         },
         {
-          "name": "Refresh Hotel Images",
+          "name": "Update Hotel",
           "request": {
-            "method": "POST",
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/hotels/1",
+              "host": ["{{base_url}}"],
+              "path": ["hotels", "1"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Hotel Name\",\n  \"isActive\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Hotel",
+          "request": {
+            "method": "DELETE",
             "header": [
               {
                 "key": "Authorization",
@@ -210,9 +342,9 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/hotels/1/refresh-images",
+              "raw": "{{base_url}}/hotels/1",
               "host": ["{{base_url}}"],
-              "path": ["hotels", "1", "refresh-images"]
+              "path": ["hotels", "1"]
             }
           }
         }
@@ -221,6 +353,23 @@
     {
       "name": "Rooms",
       "item": [
+        {
+          "name": "Get Hotel Rooms",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/hotels/1/rooms",
+              "host": ["{{base_url}}"],
+              "path": ["hotels", "1", "rooms"]
+            }
+          }
+        },
         {
           "name": "Create Room",
           "request": {
@@ -242,19 +391,14 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"type\": \"Habitación Doble\",\n  \"basePrice\": 200,\n  \"taxes\": 38,\n  \"location\": \"Piso 3\"\n}"
+              "raw": "{\n  \"type\": \"Double\",\n  \"basePrice\": 150,\n  \"taxes\": 20,\n  \"location\": \"2nd Floor\",\n  \"isAvailable\": true\n}"
             }
           }
-        }
-      ]
-    },
-    {
-      "name": "Reviews",
-      "item": [
+        },
         {
-          "name": "Create Review",
+          "name": "Update Room",
           "request": {
-            "method": "POST",
+            "method": "PUT",
             "header": [
               {
                 "key": "Content-Type",
@@ -266,13 +410,30 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/hotels/1/reviews",
+              "raw": "{{base_url}}/hotels/1/rooms/1",
               "host": ["{{base_url}}"],
-              "path": ["hotels", "1", "reviews"]
+              "path": ["hotels", "1", "rooms", "1"]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Excelente servicio y ubicación\"\n}"
+              "raw": "{\n  \"type\": \"Double Deluxe\",\n  \"basePrice\": 180,\n  \"taxes\": 25,\n  \"location\": \"2nd Floor\",\n  \"isAvailable\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Toggle Room Availability",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/hotels/1/rooms/1/toggle",
+              "host": ["{{base_url}}"],
+              "path": ["hotels", "1", "rooms", "1", "toggle"]
             }
           }
         }
@@ -282,32 +443,7 @@
       "name": "Reservations",
       "item": [
         {
-          "name": "Create Reservation",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/reservations",
-              "host": ["{{base_url}}"],
-              "path": ["reservations"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"checkInDate\": \"2024-02-20\",\n  \"checkOutDate\": \"2024-02-25\",\n  \"guestName\": \"Juan Pérez\",\n  \"guestEmail\": \"juan@ejemplo.com\",\n  \"guestPhone\": \"+573001234567\",\n  \"emergencyContactName\": \"María Pérez\",\n  \"emergencyContactPhone\": \"+573009876543\",\n  \"roomId\": 1\n}"
-            }
-          }
-        },
-        {
-          "name": "Get All Reservations (Agent)",
+          "name": "Get Agent Reservations",
           "request": {
             "method": "GET",
             "header": [
@@ -317,31 +453,31 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/reservations",
+              "raw": "{{base_url}}/reservations?hotelId=1&startDate=2024-03-01&endDate=2024-03-31",
               "host": ["{{base_url}}"],
               "path": ["reservations"],
               "query": [
                 {
                   "key": "hotelId",
                   "value": "1",
-                  "disabled": true
+                  "description": "Filter by hotel"
                 },
                 {
                   "key": "startDate",
-                  "value": "2024-02-01",
-                  "disabled": true
+                  "value": "2024-03-01",
+                  "description": "Start date"
                 },
                 {
                   "key": "endDate",
-                  "value": "2024-02-28",
-                  "disabled": true
+                  "value": "2024-03-31",
+                  "description": "End date"
                 }
               ]
             }
           }
         },
         {
-          "name": "Get Hotel Reservations (Agent)",
+          "name": "Get Hotel Reservations",
           "request": {
             "method": "GET",
             "header": [
@@ -375,7 +511,32 @@
           }
         },
         {
-          "name": "Confirm Reservation (Agent)",
+          "name": "Create Reservation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations",
+              "host": ["{{base_url}}"],
+              "path": ["reservations"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"checkInDate\": \"2024-03-15\",\n  \"checkOutDate\": \"2024-03-20\",\n  \"guestName\": \"John Doe\",\n  \"guestEmail\": \"john@example.com\",\n  \"guestPhone\": \"1234567890\",\n  \"emergencyContactName\": \"Jane Doe\",\n  \"emergencyContactPhone\": \"0987654321\",\n  \"roomId\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Confirm Reservation",
           "request": {
             "method": "POST",
             "header": [
@@ -423,98 +584,55 @@
               "raw": "{\n  \"reservationId\": 1,\n  \"reason\": \"Change of plans\"\n}"
             }
           }
-        }
-      ]
-    },
-    {
-      "name": "Seeder",
-      "item": [
+        },
         {
-          "name": "Generate Seed Data",
+          "name": "Update Reservation Status",
           "request": {
-            "method": "POST",
+            "method": "PATCH",
             "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
               {
                 "key": "Authorization",
                 "value": "Bearer {{access_token}}"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/seeder/generate?count=5",
+              "raw": "{{base_url}}/reservations/1/status",
               "host": ["{{base_url}}"],
-              "path": ["seeder", "generate"],
-              "query": [
-                {
-                  "key": "count",
-                  "value": "5",
-                  "description": "Número de hoteles a generar (por defecto: 10)"
-                }
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Statistics",
-      "item": [
-        {
-          "name": "Get Hotel Occupancy",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/statistics/occupancy?hotelId=1&startDate=2024-02-01&endDate=2024-02-28",
-              "host": ["{{base_url}}"],
-              "path": ["statistics", "occupancy"],
-              "query": [
-                {
-                  "key": "hotelId",
-                  "value": "1"
-                },
-                {
-                  "key": "startDate",
-                  "value": "2024-02-01"
-                },
-                {
-                  "key": "endDate",
-                  "value": "2024-02-28"
-                }
-              ]
+              "path": ["reservations", "1", "status"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"confirmed\"\n}"
             }
           }
         },
         {
-          "name": "Get Hotel Revenue",
+          "name": "Validate Room Availability",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
             "url": {
-              "raw": "{{base_url}}/statistics/revenue?hotelId=1&startDate=2024-02-01&endDate=2024-02-28",
+              "raw": "{{base_url}}/reservations/fetch/validate-availability?hotelId=1&checkIn=2024-03-15&checkOut=2024-03-20",
               "host": ["{{base_url}}"],
-              "path": ["statistics", "revenue"],
+              "path": ["reservations", "fetch", "validate-availability"],
               "query": [
                 {
                   "key": "hotelId",
-                  "value": "1"
+                  "value": "1",
+                  "description": "Hotel ID"
                 },
                 {
-                  "key": "startDate",
-                  "value": "2024-02-01"
+                  "key": "checkIn",
+                  "value": "2024-03-15",
+                  "description": "Check-in date"
                 },
                 {
-                  "key": "endDate",
-                  "value": "2024-02-28"
+                  "key": "checkOut",
+                  "value": "2024-03-20",
+                  "description": "Check-out date"
                 }
               ]
             }
@@ -546,7 +664,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"reservationId\": 1,\n  \"message\": \"Hello, I have a question about the check-in time\"\n}"
+              "raw": "{\n  \"reservationId\": 1,\n  \"message\": \"Hello, I have a question about check-in time.\"\n}"
             }
           }
         },
@@ -564,6 +682,79 @@
               "raw": "{{base_url}}/messages/reservation/1",
               "host": ["{{base_url}}"],
               "path": ["messages", "reservation", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Statistics",
+      "item": [
+        {
+          "name": "Get Hotel Occupancy Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/statistics/occupancy?hotelId=1&startDate=2024-03-01&endDate=2024-03-31",
+              "host": ["{{base_url}}"],
+              "path": ["statistics", "occupancy"],
+              "query": [
+                {
+                  "key": "hotelId",
+                  "value": "1",
+                  "description": "Hotel ID"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2024-03-01",
+                  "description": "Start date"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2024-03-31",
+                  "description": "End date"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Hotel Revenue Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/statistics/revenue?hotelId=1&startDate=2024-03-01&endDate=2024-03-31",
+              "host": ["{{base_url}}"],
+              "path": ["statistics", "revenue"],
+              "query": [
+                {
+                  "key": "hotelId",
+                  "value": "1",
+                  "description": "Hotel ID"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2024-03-01",
+                  "description": "Start date"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2024-03-31",
+                  "description": "End date"
+                }
+              ]
             }
           }
         }

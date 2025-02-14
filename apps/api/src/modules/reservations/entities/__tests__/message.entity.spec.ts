@@ -54,7 +54,6 @@ describe('ReservationMessage Entity', () => {
       expect(message.reservation).toBeDefined();
       expect(message.reservation instanceof Reservation).toBeTruthy();
 
-      // Test relation decorators
       const metadata = getMetadataArgsStorage();
       const relationMetadata = metadata.relations.find(
         relation =>
@@ -66,7 +65,6 @@ describe('ReservationMessage Entity', () => {
       expect(typeof relationMetadata.type).toBe('function');
       expect(relationMetadata.relationType).toBe('many-to-one');
 
-      // Test JoinColumn decorator
       const joinColumnMetadata = metadata.joinColumns.find(
         joinColumn =>
           joinColumn.target === ReservationMessage &&

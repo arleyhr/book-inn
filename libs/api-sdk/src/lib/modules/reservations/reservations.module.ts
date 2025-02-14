@@ -1,4 +1,14 @@
+import { User } from '../users/users.module';
 import { HttpClient } from '../../client';
+
+export interface Room {
+  id: number;
+  type: string;
+  basePrice: number;
+  taxes: number;
+  location: string;
+  isAvailable: boolean;
+}
 
 export interface Reservation {
   id: string;
@@ -35,12 +45,56 @@ export interface CreateMessageDto {
   content: string;
 }
 
+export interface OccupancyStats {
+  totalRooms: number;
+  occupiedRooms: number;
+  occupancyRate: number;
+  upcomingReservations: number;
+}
+
+export interface RevenueStats {
+  totalRevenue: number;
+  periodRevenue: number;
+  averageRoomRate: number;
+  reservationsCount: number;
+}
+
 export interface ReservationStatistics {
   total: number;
   pending: number;
   confirmed: number;
   cancelled: number;
   completed: number;
+}
+
+export interface CreateBookingDto {
+  hotelId: number;
+  roomId: number;
+  checkIn: string;
+  checkOut: string;
+  totalPrice: number;
+}
+
+export interface Booking extends CreateBookingDto {
+  id: number;
+  userId: number;
+  status: 'pending' | 'confirmed' | 'cancelled';
+  createdAt: string;
+}
+
+export interface CancelReservationDto {
+  reservationId: number;
+  reason: string;
+}
+
+export interface ConfirmReservationDto {
+  reservationId: number;
+}
+
+export interface ListReservationsDto {
+  hotelId?: number;
+  startDate?: string;
+  endDate?: string;
 }
 
 export class ReservationsModule {
@@ -67,7 +121,7 @@ export class ReservationsModule {
   }
 
   async cancelReservation(id: string): Promise<Reservation> {
-    const response = await this.http.post<Reservation>(`/reservations/${id}/cancel`);
+    const response = await this.http.post<Reservation>(`/reservations/${id}/cancel`, {});
     return response.data;
   }
 
@@ -84,5 +138,27 @@ export class ReservationsModule {
   async getStatistics(): Promise<ReservationStatistics> {
     const response = await this.http.get<ReservationStatistics>('/reservations/statistics');
     return response.data;
+  }
+
+  async getOccupancyStats(hotelId: number, startDate: Date, endDate: Date): Promise<OccupancyStats> {
+    const response = await this.http.get<OccupancyStats>('/statistics/occupancy', {
+      params: {
+        hotelId: hotelId.toString(),
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0],
+      },
+    })
+    return response.data
+  }
+
+  async getRevenueStats(hotelId: number, startDate: Date, endDate: Date): Promise<RevenueStats> {
+    const response = await this.http.get<RevenueStats>('/statistics/revenue', {
+      params: {
+        hotelId: hotelId.toString(),
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0],
+      },
+    })
+    return response.data
   }
 }

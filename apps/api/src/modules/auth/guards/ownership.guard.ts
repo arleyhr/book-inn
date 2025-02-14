@@ -14,8 +14,6 @@ export class OwnershipGuard implements CanActivate {
       throw new ForbiddenException('Access denied');
     }
 
-    // Check if the user is the owner of the resource
-    // This is a basic implementation. You might want to customize this based on your needs
     return user.id === parseInt(resourceId);
   }
 }

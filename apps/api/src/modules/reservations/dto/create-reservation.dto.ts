@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsPhoneNumber, IsNotEmpty, IsNumber, IsDateString } from 'class-validator';
+import { IsString, IsEmail, IsNotEmpty, IsNumber, IsDateString, IsOptional } from 'class-validator';
 
 export class CreateReservationDto {
   @IsDateString()
@@ -17,7 +17,6 @@ export class CreateReservationDto {
   @IsNotEmpty()
   guestEmail: string;
 
-  @IsPhoneNumber()
   @IsNotEmpty()
   guestPhone: string;
 
@@ -25,13 +24,12 @@ export class CreateReservationDto {
   @IsNotEmpty()
   emergencyContactName: string;
 
-  @IsPhoneNumber()
   @IsNotEmpty()
   emergencyContactPhone: string;
 
   @IsNumber()
-  @IsNotEmpty()
-  userId: number;
+  @IsOptional()
+  userId?: number;
 
   @IsNumber()
   @IsNotEmpty()

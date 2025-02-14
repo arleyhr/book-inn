@@ -9,27 +9,35 @@ export interface Hotel {
   country: string;
   rating: number;
   images: string[];
-  rooms: Room[];
-  reviews: Review[];
+  rooms: {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    capacity: number;
+    images: string[];
+    hotelId: string;
+  }[];
+  reviews: {
+    id: string;
+    rating: number;
+    comment: string;
+    hotelId: string;
+    userId: string;
+    createdAt: string;
+  }[];
 }
 
-export interface Room {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  capacity: number;
-  images: string[];
-  hotelId: string;
-}
-
-export interface Review {
-  id: string;
-  rating: number;
-  comment: string;
-  hotelId: string;
-  userId: string;
-  createdAt: string;
+export interface SearchHotelsParams {
+  city?: string;
+  country?: string;
+  checkIn?: string;
+  checkOut?: string;
+  name?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  rating?: string;
+  amenities?: string;
 }
 
 export interface CreateHotelDto {
@@ -57,6 +65,11 @@ export interface CreateReviewDto {
 export class HotelsModule {
   constructor(private readonly http: HttpClient) {}
 
+  async search(params: SearchHotelsParams): Promise<Hotel[]> {
+    const response = await this.http.get<Hotel[]>('/hotels/search', { params });
+    return response.data;
+  }
+
   async getHotels(): Promise<Hotel[]> {
     const response = await this.http.get<Hotel[]>('/hotels');
     return response.data;
@@ -81,13 +94,13 @@ export class HotelsModule {
     await this.http.delete(`/hotels/${id}`);
   }
 
-  async createRoom(hotelId: string, data: CreateRoomDto): Promise<Room> {
-    const response = await this.http.post<Room>(`/hotels/${hotelId}/rooms`, data);
+  async createRoom(hotelId: string, data: CreateRoomDto): Promise<Hotel> {
+    const response = await this.http.post<Hotel>(`/hotels/${hotelId}/rooms`, data);
     return response.data;
   }
 
-  async updateRoom(hotelId: string, roomId: string, data: Partial<CreateRoomDto>): Promise<Room> {
-    const response = await this.http.patch<Room>(`/hotels/${hotelId}/rooms/${roomId}`, data);
+  async updateRoom(hotelId: string, roomId: string, data: Partial<CreateRoomDto>): Promise<Hotel> {
+    const response = await this.http.patch<Hotel>(`/hotels/${hotelId}/rooms/${roomId}`, data);
     return response.data;
   }
 
@@ -95,12 +108,29 @@ export class HotelsModule {
     await this.http.delete(`/hotels/${hotelId}/rooms/${roomId}`);
   }
 
-  async createReview(hotelId: string, data: CreateReviewDto): Promise<Review> {
-    const response = await this.http.post<Review>(`/hotels/${hotelId}/reviews`, data);
+  async createReview(hotelId: string, data: CreateReviewDto): Promise<Hotel> {
+    const response = await this.http.post<Hotel>(`/hotels/${hotelId}/reviews`, data);
     return response.data;
   }
 
   async deleteReview(hotelId: string, reviewId: string): Promise<void> {
     await this.http.delete(`/hotels/${hotelId}/reviews/${reviewId}`);
+  }
+
+  async getFeatured(limit?: number): Promise<Hotel[]> {
+    const response = await this.http.get<Hotel[]>('/hotels/featured', {
+      params: { limit: limit?.toString() }
+    });
+    return response.data;
+  }
+
+  async getAgentHotels(): Promise<Hotel[]> {
+    const response = await this.http.get<Hotel[]>('/hotels/fetch/by-agent');
+    return response.data;
+  }
+
+  async toggleRoomAvailability(hotelId: string, roomId: string): Promise<Hotel> {
+    const response = await this.http.put<Hotel>(`/hotels/${hotelId}/rooms/${roomId}/toggle`, {});
+    return response.data;
   }
 }

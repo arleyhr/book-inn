@@ -36,6 +36,7 @@ yarn-error.log
 testem.log
 /typings
 .env
+.env.local
 
 # System Files
 .DS_Store
@@ -43,3 +44,7 @@ Thumbs.db
 
 .nx/cache
 .nx/workspace-data
+
+# Next.js
+.next
+out

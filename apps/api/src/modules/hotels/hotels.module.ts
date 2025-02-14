@@ -10,11 +10,13 @@ import { Room } from './entities/room.entity';
 import { Review } from './entities/review.entity';
 import { UsersModule } from '../users/users.module';
 import { Amenity } from './entities/amenity.entity';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Hotel, Room, Review, Amenity]),
-    UsersModule
+    UsersModule,
+    AuthModule
   ],
   controllers: [HotelsController],
   providers: [HotelsService, RoomsService, ReviewsService, GooglePlacesService],

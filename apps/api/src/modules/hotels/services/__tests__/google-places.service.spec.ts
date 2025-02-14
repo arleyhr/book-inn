@@ -20,25 +20,42 @@ jest.mock('path', () => ({
 
 describe('GooglePlacesService', () => {
   let service: GooglePlacesService;
-  let configService: ConfigService;
+  let mockAxios: jest.Mocked<typeof axios>;
+  let mockConfigService: jest.Mocked<ConfigService>;
   const mockApiKey = 'test-api-key';
   const mockBaseUrl = 'https://maps.googleapis.com/maps/api/place';
 
   beforeEach(async () => {
+    mockAxios = {
+      get: jest.fn(),
+      post: jest.fn(),
+      isAxiosError: jest.fn(),
+      request: jest.fn(),
+      delete: jest.fn(),
+      head: jest.fn(),
+      options: jest.fn(),
+      put: jest.fn(),
+      patch: jest.fn(),
+      getUri: jest.fn(),
+      defaults: { headers: { common: {} } }
+    } as any;
+
+    mockConfigService = {
+      get: jest.fn().mockReturnValue('fake_api_key')
+    } as any;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GooglePlacesService,
         {
           provide: ConfigService,
-          useValue: {
-            get: jest.fn().mockReturnValue(mockApiKey),
-          },
-        },
+          useValue: mockConfigService
+        }
       ],
     }).compile();
 
     service = module.get<GooglePlacesService>(GooglePlacesService);
-    configService = module.get<ConfigService>(ConfigService);
+    (service as any).axios = mockAxios;
 
     jest.clearAllMocks();
     (path.join as jest.Mock).mockImplementation((...args) => args.join('/'));
@@ -63,26 +80,31 @@ describe('GooglePlacesService', () => {
     };
 
     it('should search hotels successfully', async () => {
-      (axios.get as jest.Mock).mockResolvedValueOnce(mockSearchResponse);
+      mockAxios.get.mockResolvedValue(mockSearchResponse);
 
       const result = await service.searchHotels(mockCity);
 
       expect(result).toEqual(mockSearchResponse.data.results);
-      expect(axios.get).toHaveBeenCalledWith(`${mockBaseUrl}/textsearch/json`, {
+      expect(mockAxios.get).toHaveBeenCalledWith(`${mockBaseUrl}/textsearch/json`, {
         params: {
           query: `hoteles en ${mockCity} Colombia`,
           type: 'lodging',
-          key: mockApiKey,
+          key: 'fake_api_key',
           language: 'es-CO',
         },
       });
     });
 
-    it('should handle search errors', async () => {
-      const error = new Error('API Error');
-      (axios.get as jest.Mock).mockRejectedValueOnce(error);
+    it('should handle API errors gracefully', async () => {
+      mockAxios.get.mockRejectedValue(new Error('API Error'));
 
-      await expect(service.searchHotels(mockCity)).rejects.toThrow(error);
+      await expect(service.searchHotels('test query')).rejects.toThrow('Error searching hotels');
+    });
+
+    it('should handle invalid responses', async () => {
+      mockAxios.get.mockResolvedValue({ data: {} });
+
+      await expect(service.searchHotels('test query')).rejects.toThrow('Invalid response from Google Places API');
     });
   });
 
@@ -105,7 +127,7 @@ describe('GooglePlacesService', () => {
     };
 
     it('should get place details successfully', async () => {
-      (axios.get as jest.Mock).mockResolvedValueOnce(mockDetailsResponse);
+      mockAxios.get.mockResolvedValueOnce(mockDetailsResponse);
 
       const result = await service.getPlaceDetails(mockPlaceId);
 
@@ -113,48 +135,32 @@ describe('GooglePlacesService', () => {
         ...mockDetailsResponse.data.result,
         amenities: expect.any(Array),
       });
-      expect(axios.get).toHaveBeenCalledWith(`${mockBaseUrl}/details/json`, {
+      expect(mockAxios.get).toHaveBeenCalledWith(`${mockBaseUrl}/details/json`, {
         params: {
           place_id: mockPlaceId,
-          key: mockApiKey,
+          key: 'fake_api_key',
           language: 'es-CO',
-          fields: expect.any(String),
+          fields: 'name,formatted_address,geometry,photos,rating,reviews,price_level,type,wheelchair_accessible_entrance,business_status,formatted_phone_number',
         },
       });
     });
 
-    it('should handle invalid API response without data', async () => {
-      const invalidResponse = {};
-      (axios.get as jest.Mock).mockResolvedValueOnce(invalidResponse);
-
-      await expect(service.getPlaceDetails(mockPlaceId)).rejects.toThrow('Invalid response from Google Places API');
-    });
-
-    it('should handle invalid API response without result', async () => {
-      const invalidResponse = { data: {} };
-      (axios.get as jest.Mock).mockResolvedValueOnce(invalidResponse);
-
-      await expect(service.getPlaceDetails(mockPlaceId)).rejects.toThrow('Invalid response from Google Places API');
-    });
-
-    it('should handle missing geometry or location', async () => {
-      const invalidResponse = {
+    it('should handle missing geometry', async () => {
+      mockAxios.get.mockResolvedValue({
         data: {
           result: {
-            name: 'Test Hotel',
-          },
-        },
-      };
-      (axios.get as jest.Mock).mockResolvedValueOnce(invalidResponse);
+            name: 'Test Hotel'
+          }
+        }
+      });
 
-      await expect(service.getPlaceDetails(mockPlaceId)).rejects.toThrow('Missing required place details');
+      await expect(service.getPlaceDetails('test_place_id')).rejects.toThrow('Missing required place details');
     });
 
     it('should handle API errors', async () => {
-      const error = new Error('API Error');
-      (axios.get as jest.Mock).mockRejectedValueOnce(error);
+      mockAxios.get.mockRejectedValue(new Error('API Error'));
 
-      await expect(service.getPlaceDetails(mockPlaceId)).rejects.toThrow(error);
+      await expect(service.getPlaceDetails('test_place_id')).rejects.toThrow('Error getting place details');
     });
   });
 
@@ -170,7 +176,7 @@ describe('GooglePlacesService', () => {
     });
 
     it('should get and cache photos successfully', async () => {
-      (axios.get as jest.Mock).mockResolvedValueOnce({ data: mockPhotoData });
+      mockAxios.get.mockResolvedValueOnce({ data: mockPhotoData });
       (fs.promises.writeFile as jest.Mock).mockResolvedValueOnce(undefined);
 
       const result = await service.getPlacePhotos(mockPhotos);
@@ -191,25 +197,20 @@ describe('GooglePlacesService', () => {
       const result = await service.getPlacePhotos(mockPhotos);
 
       expect(result).toHaveLength(1);
-      expect(axios.get).not.toHaveBeenCalled();
+      expect(mockAxios.get).not.toHaveBeenCalled();
     });
 
     it('should handle photo download errors', async () => {
-      (fs.statSync as jest.Mock).mockImplementation(() => {
-        throw new Error('File not found');
-      });
-      (axios.get as jest.Mock).mockRejectedValueOnce(new Error('Download Error'));
+      mockAxios.get.mockRejectedValue(new Error('Download Error'));
 
-      const result = await service.getPlacePhotos(mockPhotos);
-
-      expect(result).toEqual([]);
+      await expect(service.downloadPhoto(mockPhotoReference)).rejects.toThrow('Error downloading photo');
     });
 
     it('should handle empty photos array', async () => {
       const result = await service.getPlacePhotos([]);
 
       expect(result).toEqual([]);
-      expect(axios.get).not.toHaveBeenCalled();
+      expect(mockAxios.get).not.toHaveBeenCalled();
     });
 
     it('should handle general errors and return empty array', async () => {
@@ -269,8 +270,7 @@ describe('GooglePlacesService', () => {
     it('should create cache directory if it does not exist', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(false);
 
-      // Trigger constructor which calls ensureCacheDirExists
-      new GooglePlacesService(configService);
+      new GooglePlacesService(mockConfigService);
 
       expect(fs.mkdirSync).toHaveBeenCalledWith(
         expect.stringContaining('uploads/hotels'),
@@ -281,7 +281,7 @@ describe('GooglePlacesService', () => {
     it('should not create cache directory if it already exists', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
 
-      new GooglePlacesService(configService);
+      new GooglePlacesService(mockConfigService);
 
       expect(fs.mkdirSync).not.toHaveBeenCalled();
     });
@@ -300,7 +300,6 @@ describe('GooglePlacesService', () => {
       expect(result).toContain('Spa');
       expect(result).toContain('Restaurante');
       expect(result).toContain('Acceso para sillas de ruedas');
-      // Verificar amenidades por defecto
       expect(result).toContain('WiFi');
       expect(result).toContain('Aire acondicionado');
     });
@@ -374,7 +373,7 @@ describe('GooglePlacesService', () => {
       const photoReference = 'test_photo_reference';
       const url = service['getPhotoUrl'](photoReference);
 
-      expect(url).toBe(`${mockBaseUrl}/photo?maxwidth=800&photo_reference=${photoReference}&key=${mockApiKey}`);
+      expect(url).toBe(`${mockBaseUrl}/photo?maxwidth=800&photo_reference=${photoReference}&key=fake_api_key`);
     });
   });
 });

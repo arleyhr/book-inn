@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, NotFoundException, BadRequestException } from '@nestjs/common';
 import { OwnershipGuard } from '../../auth/guards/ownership.guard';
 import { UsersService } from '../services/users.service';
 import { User } from '../entities/user.entity';
@@ -14,19 +14,40 @@ export class UsersController {
 
   @Get(':id')
   @UseGuards(OwnershipGuard)
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    if (isNaN(+id)) {
+      throw new BadRequestException('Invalid ID format');
+    }
+    const user = await this.usersService.findOne(+id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
   @Patch(':id')
   @UseGuards(OwnershipGuard)
-  update(@Param('id') id: string, @Body() updateUser: Partial<User>) {
+  async update(@Param('id') id: string, @Body() updateUser: Partial<User>) {
+    if (isNaN(+id)) {
+      throw new BadRequestException('Invalid ID format');
+    }
+    const user = await this.usersService.findOne(+id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
     return this.usersService.update(+id, updateUser);
   }
 
   @Delete(':id')
   @UseGuards(OwnershipGuard)
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
+    if (isNaN(+id)) {
+      throw new BadRequestException('Invalid ID format');
+    }
+    const user = await this.usersService.findOne(+id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
     return this.usersService.remove(+id);
   }
 }

@@ -92,7 +92,6 @@ describe('RoomsService', () => {
 
     it('should validate required fields', async () => {
       const invalidRoomDto = {
-        // Missing required fields
         taxes: 16,
         location: 'Floor 1',
       };
