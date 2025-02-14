@@ -39,6 +39,28 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+    # Primer despliegue para crear el storage account
+    - name: Initial Terraform Setup
+      if: github.ref == 'refs/heads/main'
+      run: |
+        cd terraform
+        terraform init -backend=false
+        terraform apply -auto-approve -target=azurerm_storage_account.tfstate
+      env:
+        ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+        ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+    # Configurar el backend
+    - name: Configure Terraform Backend
+      if: github.ref == 'refs/heads/main'
+      run: |
+        cd terraform
+        STORAGE_ACCOUNT_NAME=$(terraform output -raw storage_account_name)
+        cp backend.tf.example backend.tf
+        sed -i "s/<STORAGE_ACCOUNT_SUFFIX>/$STORAGE_ACCOUNT_NAME/" backend.tf
+
     - name: Terraform Init
       run: |
         cd terraform
