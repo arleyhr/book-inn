@@ -11,6 +11,9 @@
     "test:watch": "nx test api,api-sdk --watch",
     "test:coverage": "nx test api,api-sdk --coverage"
   },
+  "resolutions": {
+    "eslint": "8.57.1"
+  },
   "private": true,
   "dependencies": {
     "@heroicons/react": "^2.2.0",

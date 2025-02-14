@@ -13,7 +13,7 @@ export async function getFeaturedHotels() {
 export async function getHotelById(id: string) {
   try {
     const api = await getServerApi()
-    return api.hotels.getById(id)
+    return api.hotels.getHotel(id)
   } catch (error) {
     console.error('Error in getHotelById:', error)
     throw error

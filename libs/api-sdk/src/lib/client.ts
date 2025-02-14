@@ -83,27 +83,27 @@ export class AngularHttpClient implements HttpClient {
 
   async get<T = unknown>(url: string, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
     const response = await this.http.get(this.getFullUrl(url), this.getOptions(config)).toPromise();
-    return this.normalizeResponse(response);
+    return this.normalizeResponse(response) as HttpResponse<T>;
   }
 
   async post<T = unknown>(url: string, data?: unknown, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
     const response = await this.http.post(this.getFullUrl(url), data, this.getOptions(config)).toPromise();
-    return this.normalizeResponse(response);
+    return this.normalizeResponse(response) as HttpResponse<T>;
   }
 
   async put<T = unknown>(url: string, data?: unknown, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
     const response = await this.http.put(this.getFullUrl(url), data, this.getOptions(config)).toPromise();
-    return this.normalizeResponse(response);
+    return this.normalizeResponse(response) as HttpResponse<T>;
   }
 
   async patch<T = unknown>(url: string, data?: unknown, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
     const response = await this.http.patch(this.getFullUrl(url), data, this.getOptions(config)).toPromise();
-    return this.normalizeResponse(response);
+    return this.normalizeResponse(response) as HttpResponse<T>;
   }
 
   async delete<T = unknown>(url: string, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
     const response = await this.http.delete(this.getFullUrl(url), this.getOptions(config)).toPromise();
-    return this.normalizeResponse(response);
+    return this.normalizeResponse(response) as HttpResponse<T>;
   }
 
   setHeader(name: string, value: string): void {

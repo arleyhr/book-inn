@@ -80,7 +80,7 @@ export const fetchHotels = async (searchParams: SearchHotelsParams): Promise<Hot
 
 export const fetchHotelById = async (id: string): Promise<Hotel> => {
   try {
-    return await getApi().hotels.getById(id)
+    return await getApi().hotels.getHotel(id)
   } catch (error) {
     throw getApi().handleError(error)
   }

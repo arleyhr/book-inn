@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '../../../../store/auth'
 import { useAuthModalStore } from '../../../../store/auth-modal'
