@@ -6,8 +6,6 @@ export interface User {
   firstName: string;
   lastName: string;
   role: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface UpdateUserDto {
@@ -40,7 +38,7 @@ export class UsersModule {
   }
 
   async updatePassword(data: UpdatePasswordDto): Promise<void> {
-    await this.http.patch('/users/password', data);
+    await this.http.post('/users/password', data);
   }
 
   async deleteUser(id: string): Promise<void> {

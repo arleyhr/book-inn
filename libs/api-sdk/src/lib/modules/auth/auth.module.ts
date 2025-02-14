@@ -11,8 +11,8 @@ export interface RegisterDto extends LoginDto {
 }
 
 export interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
+  access_token: string;
+  refresh_token: string;
   user: {
     id: string;
     email: string;
@@ -23,8 +23,8 @@ export interface AuthResponse {
 }
 
 export interface RefreshTokenResponse {
-  accessToken: string;
-  refreshToken: string;
+  access_token: string;
+  refresh_token: string;
 }
 
 export class AuthModule {

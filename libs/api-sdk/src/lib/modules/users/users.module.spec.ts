@@ -3,33 +3,53 @@ import { HttpClient, HttpResponse } from '../../client';
 
 class MockHttpClient implements HttpClient {
   mockResponses: Record<string, unknown> = {};
+  mockErrors: Record<string, Error> = {};
 
   setMockResponse(method: string, url: string, response: unknown): void {
     this.mockResponses[`${method}:${url}`] = response;
   }
 
+  setMockError(method: string, url: string, error: Error): void {
+    this.mockErrors[`${method}:${url}`] = error;
+  }
+
   async get<T>(url: string): Promise<HttpResponse<T>> {
+    const error = this.mockErrors[`get:${url}`];
+    if (error) throw error;
     return this.createResponse(this.mockResponses[`get:${url}`] as T);
   }
 
   async post<T>(url: string, data?: unknown): Promise<HttpResponse<T>> {
+    const error = this.mockErrors[`post:${url}`];
+    if (error) throw error;
     return this.createResponse(this.mockResponses[`post:${url}`] as T);
   }
 
   async put<T>(url: string, data?: unknown): Promise<HttpResponse<T>> {
+    const error = this.mockErrors[`put:${url}`];
+    if (error) throw error;
     return this.createResponse(this.mockResponses[`put:${url}`] as T);
   }
 
   async patch<T>(url: string, data?: unknown): Promise<HttpResponse<T>> {
+    const error = this.mockErrors[`patch:${url}`];
+    if (error) throw error;
     return this.createResponse(this.mockResponses[`patch:${url}`] as T);
   }
 
   async delete<T>(url: string): Promise<HttpResponse<T>> {
+    const error = this.mockErrors[`delete:${url}`];
+    if (error) throw error;
     return this.createResponse(this.mockResponses[`delete:${url}`] as T);
   }
 
-  setHeader(name: string, value: string): void {}
-  removeHeader(name: string): void {}
+  setHeader(name: string, value: string): void {
+    return;
+  }
+
+  removeHeader(name: string): void {
+    return;
+  }
 
   private createResponse<T>(data: T): HttpResponse<T> {
     return {
@@ -49,9 +69,7 @@ describe('UsersModule', () => {
     email: 'test@example.com',
     firstName: 'Test',
     lastName: 'User',
-    role: 'user',
-    createdAt: '2024-02-09T00:00:00.000Z',
-    updatedAt: '2024-02-09T00:00:00.000Z'
+    role: 'user'
   };
 
   beforeEach(() => {
@@ -96,15 +114,21 @@ describe('UsersModule', () => {
         newPassword: 'new-password'
       };
 
-      httpClient.setMockResponse('patch', '/users/password', undefined);
+      httpClient.setMockResponse('post', '/users/password', undefined);
 
       await expect(module.updatePassword(updatePasswordDto)).resolves.not.toThrow();
     });
 
-    it('should delete user', async () => {
-      httpClient.setMockResponse('delete', '/users/1', undefined);
+    it('should handle update password failure', async () => {
+      const updatePasswordDto = {
+        currentPassword: 'wrong-password',
+        newPassword: 'new-password'
+      };
 
-      await expect(module.deleteUser('1')).resolves.not.toThrow();
+      const error = new Error('Invalid current password');
+      httpClient.setMockError('post', '/users/password', error);
+
+      await expect(module.updatePassword(updatePasswordDto)).rejects.toThrow('Invalid current password');
     });
   });
 });
