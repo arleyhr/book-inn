@@ -14,7 +14,6 @@
     ],
     "sharedGlobals": ["{workspaceRoot}/azure-pipelines.yml"]
   },
-  "nxCloudId": "67a76bd066d43971aa34cb7f",
   "plugins": [
     {
       "plugin": "@nx/webpack/plugin",

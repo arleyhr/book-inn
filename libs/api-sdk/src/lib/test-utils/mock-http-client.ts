@@ -4,6 +4,9 @@ export class MockHttpClient implements HttpClient {
   headers: Record<string, string> = {};
   mockResponses: Record<string, any> = {};
   requestHistory: { method: string; url: string; data?: any; config?: HttpRequestConfig }[] = [];
+  getHeader(name: string): string | undefined {
+    return this.headers[name];
+  }
 
   setMockResponse(method: string, url: string, response: any) {
     this.mockResponses[`${method}:${url}`] = response;

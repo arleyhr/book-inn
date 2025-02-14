@@ -9,11 +9,13 @@ export interface Hotel {
   country: string;
   rating: number;
   images: string[];
+  placeId: string;
   rooms: {
     id: string;
     name: string;
     description: string;
-    price: number;
+    basePrice: number;
+    taxes: number;
     capacity: number;
     images: string[];
     hotelId: string;
@@ -25,6 +27,12 @@ export interface Hotel {
     hotelId: string;
     userId: string;
     createdAt: string;
+  }[];
+  amenities: {
+    id: string;
+    name: string;
+    description: string;
+    hotelId: string;
   }[];
 }
 
@@ -66,7 +74,7 @@ export class HotelsModule {
   constructor(private readonly http: HttpClient) {}
 
   async search(params: SearchHotelsParams): Promise<Hotel[]> {
-    const response = await this.http.get<Hotel[]>('/hotels/search', { params });
+    const response = await this.http.get<Hotel[]>('/hotels/search', { params: params as Record<string, string> });
     return response.data;
   }
 
@@ -119,7 +127,7 @@ export class HotelsModule {
 
   async getFeatured(limit?: number): Promise<Hotel[]> {
     const response = await this.http.get<Hotel[]>('/hotels/featured', {
-      params: { limit: limit?.toString() }
+      params: { limit: limit?.toString() ?? '10' }
     });
     return response.data;
   }
