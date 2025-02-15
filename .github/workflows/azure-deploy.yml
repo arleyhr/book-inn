@@ -2,8 +2,6 @@ name: Azure Deployment
 
 on:
   push:
-    branches:
-      - main
   workflow_dispatch:
 
 env:
@@ -49,11 +47,21 @@ jobs:
         run: npx nx build web-react --prod
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY : ${{ secrets.GOOGLE_PLACES_API_KEY }}
-          NEXT_PUBLIC_GOOGLE_MAPS_ID : ${{ secrets.GOOGLE_MAPS_ID }}
+          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+          NEXT_PUBLIC_GOOGLE_MAPS_ID: ${{ secrets.GOOGLE_MAPS_ID }}
+
+      - name: Prepare Next.js Standalone
+        run: |
+          cd apps/web-react/.next/standalone
+          cp -r ../static ./.next/static
+          cp -r ../../public ./public
 
       - name: Deploy Web to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ secrets.AZURE_WEB_APP_NAME }}
           package: ./apps/web-react/.next/standalone
+
+      - name: Azure Logout
+        run: az logout
+        if: always()
