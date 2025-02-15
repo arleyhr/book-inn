@@ -53,8 +53,10 @@ jobs:
       - name: Prepare Next.js Standalone
         run: |
           cd apps/web-react/.next/standalone
-          cp -r ../static ./.next/static
-          cp -r ../../public ./public
+          mkdir -p .next/static
+          cp -r ../static/* .next/static/
+          mkdir -p public
+          cp -r ../../public/* public/
 
       - name: Deploy Web to Azure Web App
         uses: azure/webapps-deploy@v3
