@@ -8,11 +8,8 @@ import { Reservation } from '../modules/reservations/entities/reservation.entity
 const databaseUrl = process.env.DATABASE_URL;
 
 const ssl = {
-  ssl: true,
-  extra: {
-    ssl: {
-      rejectUnauthorized: false
-    }
+  ssl: {
+    rejectUnauthorized: false
   }
 }
 const databaseConfig = {
