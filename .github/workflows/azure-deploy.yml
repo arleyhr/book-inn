@@ -43,12 +43,12 @@ jobs:
           package: ./dist/apps/api
 
       # Deploy Web React
-      # - name: Build Web
-      #   run: npm run build:web
-      #   env:
-      #     NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-      #     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
-      #     NEXT_PUBLIC_GOOGLE_MAPS_ID: ${{ secrets.GOOGLE_MAPS_ID }}
+      - name: Build Web
+        run: npx nx build web-react --prod
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+          NEXT_PUBLIC_GOOGLE_MAPS_ID: ${{ secrets.GOOGLE_MAPS_ID }}
 
       - name: Deploy Web to Azure Web App
         uses: azure/webapps-deploy@v3
@@ -58,9 +58,8 @@ jobs:
           NEXT_PUBLIC_GOOGLE_MAPS_ID: ${{ secrets.GOOGLE_MAPS_ID }}
         with:
           app-name: ${{ secrets.AZURE_WEB_APP_NAME }}
-          package: .
-          startup-command: npm i && npm run build:web && npm run start:web
-
+          package: ./apps/web-react
+          startup-command: npx next start -p $PORT
 
       - name: Azure Logout
         run: az logout
