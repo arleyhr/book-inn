@@ -1,5 +1,0 @@
-{
-  "scripts": {
-    "start": "next start -p $PORT"
-  }
-}
