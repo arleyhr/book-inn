@@ -13,7 +13,6 @@ const ssl = {
   }
 }
 const databaseConfig = {
-  type: 'mysql',
   host: process.env.DB_HOST || process.env.AZURE_MYSQL_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || process.env.AZURE_MYSQL_PORT || '3306', 10),
   username: process.env.DB_USERNAME || process.env.AZURE_MYSQL_USER || 'root',
@@ -26,9 +25,11 @@ const dabaseConfigUrl = {
   url: databaseUrl,
 }
 
+console.log(databaseConfig)
+
 export default registerAs('database', () => ({
-  type: 'mysql',
   ...(databaseUrl ? dabaseConfigUrl : databaseConfig),
+  type: 'mysql',
   entities: [User, Hotel, Room, Review, Reservation],
   autoLoadEntities: true,
   // synchronize: process.env.NODE_ENV !== 'production',
