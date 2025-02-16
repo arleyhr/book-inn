@@ -15,7 +15,7 @@ RUN npm ci
 COPY . .
 
 # Build the application
-RUN npm run build api
+RUN npm run build:api
 
 # Production stage
 FROM node:22-alpine
