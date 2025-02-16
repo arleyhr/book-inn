@@ -13,6 +13,7 @@ const ssl = {
   }
 }
 const databaseConfig = {
+  type: 'mysql',
   host: process.env.DB_HOST || process.env.AZURE_MYSQL_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || process.env.AZURE_MYSQL_PORT || '3306', 10),
   username: process.env.DB_USERNAME || process.env.AZURE_MYSQL_USER || 'root',
