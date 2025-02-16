@@ -5,7 +5,8 @@
   "scripts": {
     "start:web": "nx run web-react:start --prod",
     "build:web": "nx run web-react:build --prod",
-    "prod:web-react": "nx run web-react:serve --prod",
+    "start:api": "nx run api:serve --prod",
+    "build:api": "nx run api:build --prod",
     "dev": "nx run-many -t dev,serve --projects=web-react,api --parallel",
     "dev:api": "nx run-many -t serve --projects=api",
     "dev:web": "nx run-many -t dev --projects=web-react",
