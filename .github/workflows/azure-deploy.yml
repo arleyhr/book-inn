@@ -2,6 +2,9 @@ name: Azure Deployment
 
 on:
   push:
+    paths:
+      - 'apps/api/**'
+      - '.github/workflows/azure-deploy.yml'
   workflow_dispatch:
 
 env:
@@ -11,7 +14,6 @@ env:
   API_IMAGE_NAME: ${{ secrets.AZURE_API_APP_NAME }}
   REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-
 
 jobs:
   build-and-deploy:
@@ -46,19 +48,26 @@ jobs:
           username: ${{ env.REGISTRY_USERNAME }}
           password: ${{ env.REGISTRY_PASSWORD }}
 
+      - name: Generate build timestamp
+        id: timestamp
+        run: echo "timestamp=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+
       - name: Build and push API image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./apps/api/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.API_IMAGE_NAME }}:${{ github.sha }}
+          tags: |
+            ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.API_IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.API_IMAGE_NAME }}:${{ steps.timestamp.outputs.timestamp }}
+            ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.API_IMAGE_NAME }}:latest
 
       - name: Deploy API Container to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.API_IMAGE_NAME }}
-          images: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.API_IMAGE_NAME }}:${{ github.sha }}
+          images: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.API_IMAGE_NAME }}:${{ steps.timestamp.outputs.timestamp }}
 
       - name: Azure Logout
         run: az logout
