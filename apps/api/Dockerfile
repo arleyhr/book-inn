@@ -28,7 +28,7 @@ WORKDIR /app
 # Copy built assets and dependencies
 COPY --from=builder /app/dist/apps/api ./dist
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/dist/apps/api/package*.json ./
 
 # Set environment variables
 ENV NODE_ENV=production
