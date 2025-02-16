@@ -26,6 +26,7 @@ const dabaseConfigUrl = {
 }
 
 export default registerAs('database', () => ({
+  type: 'mysql',
   ...(databaseUrl ? dabaseConfigUrl : databaseConfig),
   entities: [User, Hotel, Room, Review, Reservation],
   autoLoadEntities: true,
