@@ -45,5 +45,7 @@ ENV MYSQL_SSL=${MYSQL_SSL}
 # Expose the application port
 EXPOSE 3000
 
+CMD ["ls", "-la", "/app"]
+
 # Start the application
-CMD ["npm", "run", "start"]
+CMD ["node", "dist/main"]
