@@ -4,6 +4,8 @@ import { SearchParams } from '../components/search/search-bar'
 import { getFeaturedHotels } from '../lib/server-actions'
 import { redirect } from 'next/navigation'
 
+export const dynamic = 'force-dynamic'
+
 const FEATURED_GRID_TEMPLATE = [
   { cols: 2, rows: 2 },
   { cols: 1, rows: 1 },

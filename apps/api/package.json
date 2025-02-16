@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "start": "node dist/main.js --port $PORT"
+  }
+}
