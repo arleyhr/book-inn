@@ -1,5 +1,5 @@
 {
   "scripts": {
-    "start": "ls -la && node main.js --port $PORT"
+    "start": "ls -la && node dist/main.js --port $PORT"
   }
 }
