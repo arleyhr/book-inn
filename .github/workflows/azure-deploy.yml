@@ -15,34 +15,33 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
-
-      - name: Install NX CLI
-        run: npm install -g nx
-
-      - name: Build API
-        run: npm run build:api
+        run: npm ci
 
       - name: Azure Login
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          creds: ${{ env.AZURE_CREDENTIALS }}
 
-      - name: Deploy to Azure Web App
+      # Deploy API
+      - name: Build API
+        run: npx nx build api --prod
+
+      - name: Deploy API to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          app-name: ${{ env.AZURE_WEB_APP_NAME }}
           package: ./dist/apps/api
 
       - name: Azure Logout
