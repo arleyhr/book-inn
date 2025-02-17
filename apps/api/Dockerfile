@@ -30,20 +30,12 @@ COPY --from=builder /app/dist/apps/api ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist/apps/api/package*.json ./
 
-# Set environment variables
+# Set default environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
-
-# Azure MySQL environment variables
-ENV MYSQL_HOST=${MYSQL_HOST}
-ENV MYSQL_PORT=${MYSQL_PORT}
-ENV MYSQL_USER=${MYSQL_USER}
-ENV MYSQL_PASSWORD=${MYSQL_PASSWORD}
-ENV MYSQL_DATABASE=${MYSQL_DATABASE}
-ENV MYSQL_SSL=${MYSQL_SSL}
 
 # Expose the application port
 EXPOSE 3000
 
 # Start the application
-CMD ["npm", "run", "start"]
+CMD ["node", "dist/main"]

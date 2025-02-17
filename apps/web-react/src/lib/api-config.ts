@@ -2,8 +2,10 @@ import { ApiSdk } from '@book-inn/api-sdk'
 
 let api: ApiSdk | null = null
 
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080') + '/api'
+
 const DEFAULT_CONFIG = {
-  baseURL: (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/api',
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',

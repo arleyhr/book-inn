@@ -12,26 +12,26 @@ const ssl = {
     rejectUnauthorized: false
   }
 }
+
 const databaseConfig = {
   type: 'mysql',
-  host: process.env.DB_HOST || process.env.AZURE_MYSQL_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || process.env.AZURE_MYSQL_PORT || '3306', 10),
-  username: process.env.DB_USERNAME || process.env.AZURE_MYSQL_USER || 'root',
-  password: process.env.DB_PASSWORD || process.env.AZURE_MYSQL_PASSWORD || '',
-  database: process.env.DB_NAME || process.env.AZURE_MYSQL_DATABASE || 'book_inn',
-  ...(process.env.AZURE_MYSQL_SSL ? ssl : {})
+  host: process.env.MYSQL_HOST || 'localhost',
+  port: parseInt(process.env.MYSQL_PORT || '3306', 10),
+  username: process.env.MYSQL_USER || 'root',
+  password: process.env.MYSQL_PASSWORD || 'root',
+  database: process.env.MYSQL_DATABASE || 'book_inn',
+  ...(process.env.MYSQL_SSL ? ssl : {})
 }
 
 const dabaseConfigUrl = {
+  type: 'mysql',
   url: databaseUrl,
 }
 
 export default registerAs('database', () => ({
-  type: 'mysql',
   ...(databaseUrl ? dabaseConfigUrl : databaseConfig),
   entities: [User, Hotel, Room, Review, Reservation],
   autoLoadEntities: true,
-  // synchronize: process.env.NODE_ENV !== 'production',
   synchronize: true,
   logging: process.env.NODE_ENV !== 'production',
   charset: 'utf8mb4',

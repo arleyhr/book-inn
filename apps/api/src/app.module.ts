@@ -10,6 +10,8 @@ import { HotelsModule } from './modules/hotels/hotels.module';
 import { ReservationsModule } from './modules/reservations/reservations.module';
 import { SeederModule } from './modules/seeder/seeder.module';
 
+console.log(databaseConfig)
+
 @Module({
   imports: [
     ConfigModule.forRoot({
