@@ -33,6 +33,7 @@ jobs:
         run: |
           npm ci
           npm install -g nx@latest
+          npx nx reset
 
       - name: Azure Login
         uses: azure/login@v1
@@ -41,12 +42,9 @@ jobs:
 
       # Deploy API
       - name: Build API
-        run: npx nx build api --prod
-
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ env.AZURE_CREDENTIALS }}
+        run: |
+          npx nx reset
+          npx nx build api --prod
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
