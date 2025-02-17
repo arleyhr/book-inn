@@ -36,7 +36,7 @@ jobs:
 
       # Deploy API
       - name: Build API
-        run: npx nx build api --prod
+        run: npm run build:api
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
