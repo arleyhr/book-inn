@@ -7,6 +7,10 @@ on:
 env:
   NODE_VERSION: '22.x'
   NX_BRANCH: ${{ github.ref }}
+  AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  AZURE_WEBAPP_NAME: ${{ secrets.AZURE_API_APP_NAME }}
+  NODE_ENV: production
+  PORT: 3000
 
 jobs:
   build-and-deploy:
