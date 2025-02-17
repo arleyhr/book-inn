@@ -1,0 +1,19 @@
+{
+  "name": "api-sdk",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/api-sdk/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:swc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/api-sdk",
+        "main": "libs/api-sdk/src/index.ts",
+        "tsConfig": "libs/api-sdk/tsconfig.lib.json",
+        "assets": ["libs/api-sdk/*.md"]
+      }
+    }
+  }
+}
