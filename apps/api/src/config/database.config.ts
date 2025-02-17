@@ -15,12 +15,12 @@ const ssl = {
 
 const databaseConfig = {
   type: 'mysql',
-  host: process.env.MYSQL_HOST || process.env.AZURE_MYSQL_HOST || 'localhost',
-  port: parseInt(process.env.MYSQL_PORT || process.env.AZURE_MYSQL_PORT || '3306', 10),
-  username: process.env.MYSQL_USER || process.env.AZURE_MYSQL_USER || 'root',
-  password: process.env.MYSQL_PASSWORD || process.env.AZURE_MYSQL_PASSWORD || '',
-  database: process.env.MYSQL_DATABASE || process.env.AZURE_MYSQL_DATABASE || 'book_inn',
-  ...(process.env.MYSQL_SSL || process.env.AZURE_MYSQL_SSL ? ssl : {})
+  host: process.env.MYSQL_HOST || 'localhost',
+  port: parseInt(process.env.MYSQL_PORT || '3306', 10),
+  username: process.env.MYSQL_USER || 'root',
+  password: process.env.MYSQL_PASSWORD || 'root',
+  database: process.env.MYSQL_DATABASE || 'book_inn',
+  ...(process.env.MYSQL_SSL ? ssl : {})
 }
 
 const dabaseConfigUrl = {

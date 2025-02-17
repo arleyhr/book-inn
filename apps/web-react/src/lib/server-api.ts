@@ -1,5 +1,6 @@
 import { ApiSdk } from '@book-inn/api-sdk'
 import { cookies } from 'next/headers'
+import { API_URL } from './api-config'
 
 export async function getServerApi() {
   const cookieStore = await cookies()
@@ -7,7 +8,7 @@ export async function getServerApi() {
   const refreshToken = cookieStore.get('refreshToken')?.value
 
   return new ApiSdk({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api',
+    baseURL: API_URL,
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
