@@ -49,7 +49,7 @@ jobs:
           name: node-app
 
       - name: Unzip artifact for deployment
-        run: unzip release.zip
+        run: unzip release.zip && mv dist/apps/api/* . && rm -rf dist
 
       # - name: 'Login via Azure CLI'
       #   uses: azure/login@v3
