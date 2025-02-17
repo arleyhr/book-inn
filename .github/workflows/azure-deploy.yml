@@ -6,7 +6,6 @@ on:
 
 env:
   NODE_VERSION: '22.x'
-  NX_BRANCH: ${{ github.ref }}
   AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   AZURE_WEBAPP_NAME: ${{ secrets.AZURE_API_APP_NAME }}
   NODE_ENV: production
@@ -20,11 +19,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ env.AZURE_CREDENTIALS }}
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -34,14 +28,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Deploy API
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: Build API
         run: npx nx build api --prod
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ env.AZURE_CREDENTIALS }}
 
       - name: Deploy API to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ env.AZURE_WEB_APP_NAME }}
+          app-name: ${{ secrets.AZURE_API_APP_NAME }}
           package: ./dist/apps/api
 
       - name: Azure Logout

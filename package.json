@@ -1,12 +1,8 @@
 {
   "name": "@book-inn/source",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "start:web": "nx run web-react:start --prod",
-    "build:web": "nx run web-react:build --prod",
-    "start:api": "nx run api:serve --prod",
-    "build:api": "nx run api:build --prod",
     "dev": "nx run-many -t dev,serve --projects=web-react,api --parallel",
     "dev:api": "nx run-many -t serve --projects=api",
     "dev:web": "nx run-many -t dev --projects=web-react",
@@ -56,9 +52,7 @@
     "tailwind-merge": "^3.0.1",
     "typeorm": "^0.3.20",
     "zod": "^3.24.1",
-    "zustand": "^5.0.3",
-    "@nx/workspace": "^latest",
-    "nx": "^latest"
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@eslint/compat": "^1.1.1",
