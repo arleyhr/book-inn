@@ -32,7 +32,7 @@ jobs:
         run: npm i
 
       - name: Build API
-        run: npm run build:api
+        run: npx nx build api --prod
 
       - name: Azure Login
         uses: azure/login@v1
