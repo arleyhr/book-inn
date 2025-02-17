@@ -21,13 +21,14 @@ jobs:
         with:
           node-version: '22.x'
 
-      - name: npm install, build, and test
+      - name: Install dependencies and build
         env:
           NODE_ENV: production
           PORT: 8080
         run: |
+          npm install -g nx
           npm install
-          npm run build:api
+          nx run api:build --prod
           cp package*.json ./dist/apps/api/
           cp apps/api/package*.json ./dist/apps/api/
 
