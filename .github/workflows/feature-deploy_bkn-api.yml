@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: read #This is required for actions/checkout
 
     steps:
       - uses: actions/checkout@v4
@@ -21,44 +21,10 @@ jobs:
         with:
           node-version: '22.x'
 
-      - name: Install dependencies and build
-        env:
-          NODE_ENV: production
-          PORT: 8080
+      - name: npm install, build, and test
         run: |
-          npm install -g nx
           npm install
-          nx run api:build --prod
-          cp package*.json ./dist/apps/api/
-          cp apps/api/package*.json ./dist/apps/api/
-
-      - name: Create web.config
-        run: |
-          echo '<?xml version="1.0" encoding="utf-8"?>
-          <configuration>
-            <system.webServer>
-              <handlers>
-                <add name="iisnode" path="main.js" verb="*" modules="iisnode"/>
-              </handlers>
-              <rewrite>
-                <rules>
-                  <rule name="NodeInspector" patternSyntax="ECMAScript" stopProcessing="true">
-                    <match url="^main.js\/debug[\/]?" />
-                  </rule>
-                  <rule name="StaticContent">
-                    <action type="Rewrite" url="public{REQUEST_URI}"/>
-                  </rule>
-                  <rule name="DynamicContent">
-                    <conditions>
-                      <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="True"/>
-                    </conditions>
-                    <action type="Rewrite" url="main.js"/>
-                  </rule>
-                </rules>
-              </rewrite>
-              <iisnode watchedFiles="web.config;*.js" node_env="production"/>
-            </system.webServer>
-          </configuration>' > ./dist/apps/api/web.config
+          npm run build:api
 
       - name: Zip artifact for deployment
         run: cd ./dist/apps/api && zip release.zip ./* -r
