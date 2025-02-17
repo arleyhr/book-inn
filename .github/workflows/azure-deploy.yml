@@ -34,7 +34,7 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Build API
-        run: npx nx build api --prod
+        run: ./node_modules/.bin/nx build api --prod
 
       - name: Azure Login
         uses: azure/login@v1
