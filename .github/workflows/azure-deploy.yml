@@ -59,4 +59,4 @@ jobs:
           slot-name: 'Production'
           package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C47DCE5BA4A349ABA66DD7549790F97E }}
-          startup-command: 'PORT=8080 node main.js'
+          startup-command: 'npm start'
