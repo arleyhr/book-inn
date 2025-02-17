@@ -2,17 +2,10 @@ name: Azure Deployment
 
 on:
   push:
-    paths:
-      - 'apps/api/**'
-      - '.github/workflows/azure-deploy.yml'
   workflow_dispatch:
 
 env:
   NODE_VERSION: '22.x'
-  AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-  AZURE_WEBAPP_NAME: ${{ secrets.AZURE_API_APP_NAME }}
-  NODE_ENV: production
-  PORT: 3000
   NX_BRANCH: ${{ github.ref }}
 
 jobs:
@@ -30,10 +23,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: |
-          npm ci
-          npm install -g nx@latest
-          npx nx reset
+        run: npm ci
 
       - name: Azure Login
         uses: azure/login@v1
@@ -42,9 +32,7 @@ jobs:
 
       # Deploy API
       - name: Build API
-        run: |
-          npx nx reset
-          npx nx build api --prod
+        run: npx nx build api --prod
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
