@@ -51,11 +51,6 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      # - name: 'Login via Azure CLI'
-      #   uses: azure/login@v3
-      #   with:
-      #     creds: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C47DCE5BA4A349ABA66DD7549790F97E }}
-
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
@@ -64,3 +59,4 @@ jobs:
           slot-name: 'Production'
           package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C47DCE5BA4A349ABA66DD7549790F97E }}
+          startup-command: 'PORT=8080 node main.js'
