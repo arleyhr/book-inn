@@ -1,82 +1,201 @@
-# BookInn
+# Book Inn 🏨 
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+<div align="center">
+  <img src="apps/web-react/public/logo.png" alt="Book Inn Logo" width="200"/>
+  <p><em>Your Ultimate Hotel Booking Experience</em></p>
+</div>
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)
+![NestJS](https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-000000?logo=next.js&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?logo=tailwind-css&logoColor=white)
+![Google Maps](https://img.shields.io/badge/Google_Maps-4285F4?logo=google-maps&logoColor=white)
+![Nx](https://img.shields.io/badge/Nx-000000?logo=nx&logoColor=white)
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/node?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+## ✨ Features
 
-## Finish your CI setup
+### For Travelers 🌍
+- 🔍 Search hotels by city, dates, and price range
+- 📱 Manage your reservations
+- 💬 Direct messaging with hotel staff
+- 📅 Real-time room availability
+- ⭐ Hotel ratings and reviews
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/FMp7uoKRRT)
+### For Hotel Managers 🏢
+- 📊 Hotel and room management dashboard
+- 🛏️ Room availability control
+- 📨 Guest communication system
+- 🏨 Multiple hotel management
+- 💼 Reservation oversight
 
+## 🚀 Tech Stack
 
-## Run tasks
+### Frontend
+- Next.js with React
+- TypeScript
+- Tailwind CSS
+- Zustand for state management
+- React Query
+- Google Maps integration
 
-To run the dev server for your app, use:
+### Backend
+- NestJS
+- TypeORM
+- MySQL
+- JWT Authentication
+- TypeScript
 
-```sh
-npx nx serve book-inn
+______
+> **DEMO**: [https://book-inn-bice.vercel.app](https://book-inn-bice.vercel.app)
+______
+### 👥 Available Users
+
+You can use any of these users to test the application:
+
+#### Agent user
+- Email: agent@bookinn.com
+- Password: password123
+- Role: Agent
+
+#### Traveler user
+- Email: traveler@example.com
+- Password: password123
+- Role: Traveler
+
+## 🛠️ Getting Started
+
+### Prerequisites
+- Node.js >= 18
+- npm >= 9
+- MySQL >= 8
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/book-inn.git
+cd book-inn
 ```
 
-To create a production bundle:
-
-```sh
-npx nx build book-inn
+2. Install dependencies:
+```bash
+npm install
 ```
 
-To see all available targets to run for a project, run:
-
-```sh
-npx nx show project book-inn
+3. Set up environment variables:
+```bash
+cp .env.example .env
+cp apps/web-react/.env.local.example apps/web-react/.env.local
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+4. Start the development servers:
+```bash
+# Start all services
+npm run dev
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+# Start API only
+npm run dev:api
 
-## Add new projects
-
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-Use the plugin's generator to create new projects.
-
-To generate a new application, use:
-
-```sh
-npx nx g @nx/node:app demo
+# Start Web only
+npm run dev:web
 ```
 
-To generate a new library, use:
+The application will be available at:
+- Frontend: http://localhost:3000
+- API: http://localhost:8080/api
 
-```sh
-npx nx g @nx/node:lib mylib
+## 🧪 Testing
+
+```bash
+# Run API tests
+npm run test:api
+
+# Run SDK tests
+npm run test:api-sdk
+
+# Watch mode
+npm run test:watch
+
+# Coverage report
+npm run test:coverage
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+## 📱 Key Features in Detail
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### Hotel Search and Booking
+- Advanced search filters
+- Availability checking
+- Secure booking process
+- Instant confirmation
+
+### User Management
+- JWT-based authentication
+- Role-based access control
+- User profiles
+- Booking history
+
+### Hotel Management
+- Hotel information management
+- Room inventory control
+- Reservation management
+- Guest communication
+
+### UI/UX
+- Responsive design
+- Dark/Light mode support
+- Interactive maps
+
+## 🌐 Environment Variables
+
+### API (.env)
+```
+DATABASE_HOST=localhost
+DATABASE_PORT=3306
+DATABASE_USERNAME=root
+DATABASE_PASSWORD=root
+DATABASE_NAME=book_inn
+JWT_SECRET=your_jwt_secret
+JWT_REFRESH_SECRET=your_refresh_secret
+GOOGLE_PLACES_API_KEY=your_google_api_key
+```
+
+### Frontend (apps/web-react/.env.local)
+```
+NEXT_PUBLIC_API_URL=http://localhost:8080
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_api_key
+```
+
+## 📸 Screenshots
+
+<div align="center">
+
+###  Home Page & Search
+<img src="apps/web-react/public/Screenshot6.png" alt="Messages" width="800"/>
+
+### 📝 Hotels List
+<img src="apps/web-react/public/Screenshot7.png" alt="Messages" width="800"/>
+
+### 📝 Hotel Details
+<img src="apps/web-react/public/Screenshot8.png" alt="Messages" width="800"/>
+
+### 📝 Reservation Confirmation
+<img src="apps/web-react/public/Screenshot1.png" alt="Home Page" width="800"/>
+
+### 💬 Messages (light theme)
+<img src="apps/web-react/public/Screenshot2.png" alt="Search Results" width="800"/>
+
+### 📝 Edit/Create Hotel
+<img src="apps/web-react/public/Screenshot5.png" alt="Agent Dashboard" width="800"/>
+
+### 📝 Manage Reservations
+<img src="apps/web-react/public/Screenshot3.png" alt="Hotel Detail" width="800"/>
+
+### 📝 Manage Hotels
+<img src="apps/web-react/public/Screenshot4.png" alt="Booking Process" width="800"/>
 
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+</div>
 
-## Install Nx Console
+## 👻 LICENCE
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/nx-api/node?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+[WTFPL](http://www.wtfpl.net/about/)
