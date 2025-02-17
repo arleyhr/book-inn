@@ -13,6 +13,12 @@ RUN apt-get update && apt-get install -y \
 # Create data directory
 RUN mkdir -p /app/data && chmod 777 /app/data
 
+# Create uploads directory and set permissions
+RUN mkdir -p /app/uploads && chmod 777 /app/uploads
+
+# Create and mount persistent volume for uploads
+VOLUME ["/app/uploads"]
+
 # Copy configuration files
 COPY package*.json ./
 COPY nx.json ./
