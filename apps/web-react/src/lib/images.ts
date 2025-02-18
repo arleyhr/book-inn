@@ -1,6 +1,6 @@
 export const getHotelImageUrl = (placeId: string | undefined | null, imageUrl: string | undefined | null): string => {
   if (!imageUrl) return '/placeholder-hotel.jpg'
-  if (placeId) {
+  if (placeId && process.env.NODE_ENV !== 'production') {
     return `${process.env.NEXT_PUBLIC_API_URL}${imageUrl}`
   }
 

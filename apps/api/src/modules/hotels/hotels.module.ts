@@ -11,6 +11,7 @@ import { Review } from './entities/review.entity';
 import { UsersModule } from '../users/users.module';
 import { Amenity } from './entities/amenity.entity';
 import { AuthModule } from '../auth/auth.module';
+import { CloudinaryService } from './services/cloudinary.service';
 
 @Module({
   imports: [
@@ -19,7 +20,13 @@ import { AuthModule } from '../auth/auth.module';
     AuthModule
   ],
   controllers: [HotelsController],
-  providers: [HotelsService, RoomsService, ReviewsService, GooglePlacesService],
+  providers: [
+    HotelsService,
+    RoomsService,
+    ReviewsService,
+    GooglePlacesService,
+    CloudinaryService,
+  ],
   exports: [HotelsService, RoomsService, ReviewsService, GooglePlacesService],
 })
 export class HotelsModule {}

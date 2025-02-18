@@ -5,8 +5,10 @@ import { Hotel } from '../entities/hotel.entity';
 import { Room } from '../entities/room.entity';
 import { CreateHotelDto, CreateRoomDto } from '../dto/create-hotel.dto';
 import { GooglePlacesService } from './google-places.service';
+import { CloudinaryService } from './cloudinary.service';
 import { Amenity } from '../entities/amenity.entity';
 import { SearchHotelsDto } from '../dto/search-hotels.dto';
+import { ConfigService } from '@nestjs/config';
 
 interface UpdateRoomDto extends Partial<Room> {
   id?: number;
@@ -25,6 +27,8 @@ export class HotelsService {
     @InjectRepository(Room)
     private readonly roomRepository: Repository<Room>,
     private readonly googlePlacesService: GooglePlacesService,
+    private readonly cloudinaryService: CloudinaryService,
+    private readonly configService: ConfigService,
     @InjectRepository(Amenity)
     private readonly amenityRepository: Repository<Amenity>,
   ) {}
@@ -35,7 +39,14 @@ export class HotelsService {
       const photos = await this.googlePlacesService.getPlacePhotos(placeDetails.photos || []);
 
       if (photos.length > 0) {
-        hotel.images = photos;
+        if (this.configService.get('NODE_ENV') === 'production') {
+          const cloudinaryUrls = await Promise.all(
+            photos.map(photo => this.cloudinaryService.uploadImage(photo))
+          );
+          hotel.images = cloudinaryUrls;
+        } else {
+          hotel.images = photos;
+        }
         await this.hotelRepository.save(hotel);
       }
     }
@@ -89,9 +100,19 @@ export class HotelsService {
   }
 
   async create(createHotelDto: CreateHotelDto): Promise<Hotel> {
-    const { rooms = [], ...hotelData } = createHotelDto;
+    const { rooms = [], images = [], ...hotelData } = createHotelDto;
 
-    const hotel = this.hotelRepository.create(hotelData);
+    let processedImages = images;
+    if (this.configService.get('NODE_ENV') === 'production' && images.length > 0) {
+      processedImages = await Promise.all(
+        images.map(image => this.cloudinaryService.uploadImage(image))
+      );
+    }
+
+    const hotel = this.hotelRepository.create({
+      ...hotelData,
+      images: processedImages
+    });
     const savedHotel = await this.hotelRepository.save(hotel);
 
     if (rooms.length > 0) {
@@ -115,7 +136,28 @@ export class HotelsService {
 
   async update(id: number, updateHotelDto: Partial<CreateHotelDto>): Promise<Hotel> {
     const hotel = await this.findOne(id);
-    const { rooms, ...hotelData } = updateHotelDto;
+    const { rooms, images, ...hotelData } = updateHotelDto;
+
+    if (this.configService.get('NODE_ENV') === 'production' && images) {
+      const currentImages = hotel.images || [];
+      const imagesToDelete = currentImages.filter(img => !images.includes(img));
+      const newImages = images.filter(img => !currentImages.includes(img));
+
+      await Promise.all(
+        imagesToDelete.map(image => this.cloudinaryService.deleteImage(image))
+      );
+
+      const newCloudinaryUrls = await Promise.all(
+        newImages.map(image => this.cloudinaryService.uploadImage(image))
+      );
+
+      hotel.images = [
+        ...currentImages.filter(img => images.includes(img)),
+        ...newCloudinaryUrls
+      ];
+    } else if (images) {
+      hotel.images = images;
+    }
 
     Object.assign(hotel, hotelData);
     await this.hotelRepository.save(hotel);
@@ -172,6 +214,12 @@ export class HotelsService {
 
   async remove(id: number): Promise<void> {
     const hotel = await this.findOne(id);
+
+    if (this.configService.get('NODE_ENV') === 'production' && hotel.images?.length > 0) {
+      await Promise.all(
+        hotel.images.map(image => this.cloudinaryService.deleteImage(image))
+      );
+    }
 
     for (const room of hotel.rooms) {
       const hasActiveReservations = await this.roomRepository
