@@ -27,6 +27,6 @@ import { CloudinaryService } from './services/cloudinary.service';
     GooglePlacesService,
     CloudinaryService,
   ],
-  exports: [HotelsService, RoomsService, ReviewsService, GooglePlacesService],
+  exports: [HotelsService, RoomsService, ReviewsService, GooglePlacesService, CloudinaryService],
 })
 export class HotelsModule {}

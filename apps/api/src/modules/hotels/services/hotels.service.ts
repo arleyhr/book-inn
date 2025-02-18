@@ -54,7 +54,7 @@ export class HotelsService {
   }
 
   private async processHotelsImages(hotels: Hotel[]): Promise<Hotel[]> {
-    return await Promise.all(hotels.map(hotel => this.processGooglePlacesImages(hotel)));
+    return hotels;
   }
 
   async findAll(): Promise<Hotel[]> {
@@ -103,11 +103,10 @@ export class HotelsService {
     const { rooms = [], images = [], ...hotelData } = createHotelDto;
 
     let processedImages = images;
-    if (this.configService.get('NODE_ENV') === 'production' && images.length > 0) {
-      processedImages = await Promise.all(
-        images.map(image => this.cloudinaryService.uploadImage(image))
-      );
-    }
+
+    processedImages = await Promise.all(
+      images.map(image => this.cloudinaryService.uploadImage(image))
+    );
 
     const hotel = this.hotelRepository.create({
       ...hotelData,
@@ -138,26 +137,22 @@ export class HotelsService {
     const hotel = await this.findOne(id);
     const { rooms, images, ...hotelData } = updateHotelDto;
 
-    if (this.configService.get('NODE_ENV') === 'production' && images) {
-      const currentImages = hotel.images || [];
-      const imagesToDelete = currentImages.filter(img => !images.includes(img));
-      const newImages = images.filter(img => !currentImages.includes(img));
+    const currentImages = hotel.images || [];
+    const imagesToDelete = currentImages.filter(img => !images.includes(img));
+    const newImages = images.filter(img => !currentImages.includes(img));
 
-      await Promise.all(
-        imagesToDelete.map(image => this.cloudinaryService.deleteImage(image))
-      );
+    await Promise.all(
+      imagesToDelete.map(image => this.cloudinaryService.deleteImage(image))
+    );
 
-      const newCloudinaryUrls = await Promise.all(
-        newImages.map(image => this.cloudinaryService.uploadImage(image))
-      );
+    const newCloudinaryUrls = await Promise.all(
+      newImages.map(image => this.cloudinaryService.uploadImage(image))
+    );
 
-      hotel.images = [
-        ...currentImages.filter(img => images.includes(img)),
-        ...newCloudinaryUrls
-      ];
-    } else if (images) {
-      hotel.images = images;
-    }
+    hotel.images = [
+      ...currentImages.filter(img => images.includes(img)),
+      ...newCloudinaryUrls
+    ];
 
     Object.assign(hotel, hotelData);
     await this.hotelRepository.save(hotel);

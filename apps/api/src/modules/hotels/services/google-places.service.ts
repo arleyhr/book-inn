@@ -1,49 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as crypto from 'crypto';
+import { CloudinaryService } from './cloudinary.service';
 
 @Injectable()
 export class GooglePlacesService {
   private readonly apiKey: string;
   private readonly baseUrl = 'https://maps.googleapis.com/maps/api/place';
   private readonly logger = new Logger(GooglePlacesService.name);
-  private readonly cacheDir = 'uploads/hotels';
-  private readonly cacheDuration = 24 * 60 * 60 * 1000;
   private readonly axios = axios;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(private readonly configService: ConfigService, private readonly cloudinaryService: CloudinaryService) {
     this.apiKey = this.configService.get<string>('GOOGLE_PLACES_API_KEY');
-    this.ensureCacheDirExists();
-  }
-
-  private ensureCacheDirExists() {
-    const dir = path.join(process.cwd(), this.cacheDir);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-  }
-
-  private generateCacheFileName(photoReference: string): string {
-    const hash = crypto.createHash('md5').update(photoReference).digest('hex');
-    return `${hash}.jpg`;
-  }
-
-  private getCacheFilePath(photoReference: string): string {
-    const fileName = this.generateCacheFileName(photoReference);
-    return path.join(process.cwd(), this.cacheDir, fileName);
-  }
-
-  private isCacheValid(filePath: string): boolean {
-    try {
-      const stats = fs.statSync(filePath);
-      const age = Date.now() - stats.mtimeMs;
-      return age < this.cacheDuration;
-    } catch {
-      return false;
-    }
   }
 
   async searchHotels(city: string) {
@@ -176,21 +144,6 @@ export class GooglePlacesService {
     return `${this.baseUrl}/photo?maxwidth=800&photo_reference=${photoReference}&key=${this.apiKey}`;
   }
 
-  private async downloadAndCachePhoto(photoReference: string): Promise<string> {
-    try {
-      const photoUrl = this.getPhotoUrl(photoReference);
-      const response = await this.axios.get(photoUrl, { responseType: 'arraybuffer' });
-
-      const filePath = this.getCacheFilePath(photoReference);
-      await fs.promises.writeFile(filePath, response.data);
-
-      return `/${this.cacheDir}/${this.generateCacheFileName(photoReference)}`;
-    } catch (error) {
-      this.logger.error(`Error downloading photo ${photoReference}:`, error);
-      throw new Error('Error downloading photo');
-    }
-  }
-
   async getPlacePhotos(photos: any[]): Promise<string[]> {
     try {
       const photoUrls: string[] = [];
@@ -200,17 +153,11 @@ export class GooglePlacesService {
 
         for (const photo of selectedPhotos) {
           if (photo.photo_reference) {
-            const cacheFilePath = this.getCacheFilePath(photo.photo_reference);
+            const photoUrl = this.getPhotoUrl(photo.photo_reference);
+            const cloudinaryUrl = await this.cloudinaryService.uploadImage(photoUrl);
 
-            let photoUrl: string;
-            if (this.isCacheValid(cacheFilePath)) {
-              photoUrl = `/${this.cacheDir}/${this.generateCacheFileName(photo.photo_reference)}`;
-            } else {
-              photoUrl = await this.downloadAndCachePhoto(photo.photo_reference);
-            }
-
-            if (photoUrl) {
-              photoUrls.push(photoUrl);
+            if (cloudinaryUrl) {
+              photoUrls.push(cloudinaryUrl);
             }
           }
         }
@@ -220,34 +167,6 @@ export class GooglePlacesService {
     } catch (error) {
       this.logger.error('Error getting place photos:', error);
       return [];
-    }
-  }
-
-  async refreshHotelPhotos(placeId: string): Promise<string[]> {
-    try {
-      const details = await this.getPlaceDetails(placeId);
-      if (details && details.photos) {
-        return this.getPlacePhotos(details.photos);
-      }
-      return [];
-    } catch (error) {
-      this.logger.error(`Error refreshing photos for place ${placeId}:`, error);
-      return [];
-    }
-  }
-
-  async downloadPhoto(photoReference: string): Promise<string> {
-    try {
-      const filePath = this.getCacheFilePath(photoReference);
-
-      if (this.isCacheValid(filePath)) {
-        return `/${this.cacheDir}/${this.generateCacheFileName(photoReference)}`;
-      }
-
-      return this.downloadAndCachePhoto(photoReference);
-    } catch (error) {
-      this.logger.error(`Error downloading photo ${photoReference}:`, error);
-      throw new Error('Error downloading photo');
     }
   }
 }

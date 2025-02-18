@@ -4,6 +4,7 @@ import { HotelsService } from '../../hotels/services/hotels.service';
 import { RoomsService } from '../../hotels/services/rooms.service';
 import { ReviewsService } from '../../hotels/services/reviews.service';
 import { GooglePlacesService } from '../../hotels/services/google-places.service';
+import { CloudinaryService } from '../../hotels/services/cloudinary.service';
 import { UsersService } from '../../users/services/users.service';
 import { UserRole } from '../../users/entities/user.entity';
 import { ReservationsService } from '../../reservations/services/reservations.service';
@@ -98,6 +99,7 @@ export class SeederService {
     private readonly usersService: UsersService,
     private readonly reservationsService: ReservationsService,
     private readonly messagesService: MessagesService,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   private getRandomNumber(min: number, max: number): number {
@@ -247,6 +249,7 @@ export class SeederService {
 
           try {
             const details = await this.googlePlacesService.getPlaceDetails(hotel.place_id);
+            console.log(details)
 
             if (!details || !details.name || !details.formatted_address || !details.geometry?.location) {
               this.logger.warn(`Skipping hotel with incomplete data: ${hotel.place_id}`);
@@ -254,6 +257,20 @@ export class SeederService {
             }
 
             this.logger.debug(`Creating hotel: ${details.name}`);
+
+            const photoUrls = await this.googlePlacesService.getPlacePhotos(details.photos || []);
+            const cloudinaryUrls = [];
+
+            for (const photoUrl of photoUrls) {
+              try {
+                const cloudinaryUrl = await this.cloudinaryService.uploadImage(photoUrl);
+                cloudinaryUrls.push(cloudinaryUrl);
+              } catch (error) {
+                this.logger.warn(`Failed to upload image to Cloudinary: ${error.message}`);
+                continue;
+              }
+            }
+
             const newHotel = await this.hotelsService.create({
               name: details.name,
               address: details.formatted_address,
@@ -263,6 +280,7 @@ export class SeederService {
               longitude: details.geometry.location.lng,
               agentId: agent.id,
               placeId: hotel.place_id,
+              images: cloudinaryUrls,
             });
             this.logger.log(`Created hotel with ID: ${newHotel.id}`);
 
