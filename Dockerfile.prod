@@ -14,7 +14,8 @@ RUN apt-get update && apt-get install -y \
 RUN mkdir -p /app/data && chmod 777 /app/data
 
 # Create uploads directory and set permissions
-RUN mkdir -p /app/uploads && chmod 777 /app/uploads
+RUN mkdir -p /app/uploads/hotels && \
+    chmod -R 777 /app/uploads
 
 # Create and mount persistent volume for uploads
 VOLUME ["/app/uploads"]

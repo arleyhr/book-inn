@@ -5,18 +5,25 @@
 
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { AppModule } from './app.module';
+import * as fs from 'fs';
 import { join } from 'path';
 
 async function bootstrap() {
+  const uploadsPath = join(process.cwd(), 'uploads');
+  const hotelsPath = join(uploadsPath, 'hotels');
+
+  if (!fs.existsSync(uploadsPath)) {
+    fs.mkdirSync(uploadsPath, { recursive: true });
+  }
+  if (!fs.existsSync(hotelsPath)) {
+    fs.mkdirSync(hotelsPath, { recursive: true });
+  }
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
-
-  app.useStaticAssets(join(process.cwd(), 'uploads'), {
-    prefix: '/uploads/',
-  });
 
   app.enableCors({
     origin: true,
