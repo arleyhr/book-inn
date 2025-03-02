@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { Card } from '../common/card'
 import { Button } from '../common/button'
 import { ReservationStatus } from '../messages/reservation-status'
-import { ArrowRightIcon, ChatBubbleLeftIcon, XMarkIcon, EyeIcon } from '@heroicons/react/24/outline'
+import { ChatBubbleLeftIcon, XMarkIcon, EyeIcon } from '@heroicons/react/24/outline'
 import { getHotelImageUrl } from '../../lib/images'
 import type { Reservation } from '../../lib/api'
 
@@ -38,7 +38,7 @@ export function ReservationCard({ reservation, onCancel, onMessage }: Reservatio
                   </p>
                   <span className="text-gray-300 dark:text-gray-600">•</span>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Room #{reservation.room?.number}
+                    Room: {reservation.room.location}
                   </p>
                 </div>
               </div>
@@ -62,6 +62,15 @@ export function ReservationCard({ reservation, onCancel, onMessage }: Reservatio
                   </h4>
                   <p className="text-gray-600 dark:text-gray-400">
                     {format(new Date(reservation.checkOutDate), 'PPP')}
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Guests
+                  </h4>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {reservation.guestCount || 1}
                   </p>
                 </div>
               </div>

@@ -29,7 +29,7 @@ export function HotelReservationsClient({ hotelId }: HotelReservationsClientProp
 
   const loadReservations = async () => {
     try {
-      const data = await getApi().reservations.findByHotel(+hotelId)
+      const data = await getApi().reservations.getReservationsByHotelId(+hotelId)
       setReservations(data)
     } catch (error) {
       toast({

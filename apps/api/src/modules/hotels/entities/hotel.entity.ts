@@ -39,6 +39,9 @@ export class Hotel {
   @Column({ nullable: true })
   placeId: string;
 
+  @Column({ default: 0 })
+  maxGuestCapacity: number;
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -75,7 +75,7 @@ export class HotelsService {
       throw new NotFoundException(`Hotel with ID ${id} not found`);
     }
 
-    return this.processGooglePlacesImages(hotel);
+    return hotel;
   }
 
   async findAgentHotels(agentId: number): Promise<Hotel[]> {
@@ -107,6 +107,10 @@ export class HotelsService {
     processedImages = await Promise.all(
       images.map(image => this.cloudinaryService.uploadImage(image))
     );
+
+    if (!hotelData.maxGuestCapacity && rooms.length > 0) {
+      hotelData.maxGuestCapacity = rooms.reduce((total, room) => total + (room.guestCapacity || 1), 0);
+    }
 
     const hotel = this.hotelRepository.create({
       ...hotelData,
@@ -197,6 +201,7 @@ export class HotelsService {
         return this.roomRepository.create({
           ...room,
           hotelId: hotel.id,
+          guestCapacity: room.guestCapacity || 1,
           isAvailable: typeof room.isAvailable === 'boolean' ? room.isAvailable : true
         });
       }));
@@ -301,6 +306,13 @@ export class HotelsService {
         });
     }
 
+    if (searchParams.guests) {
+      query.andWhere(
+        '(hotel.maxGuestCapacity >= :guests OR EXISTS (SELECT 1 FROM rooms r WHERE r.hotelId = hotel.id AND r.guestCapacity >= :guests))',
+        { guests: searchParams.guests }
+      );
+    }
+
     const hotels = await query.getMany();
     return this.processHotelsImages(hotels);
   }
@@ -312,7 +324,7 @@ export class HotelsService {
       throw new NotFoundException('Hotel is not from Google Places');
     }
 
-    return this.processGooglePlacesImages(hotel);
+    return hotel;
   }
 
   async getFeatured(limit = 6): Promise<Hotel[]> {

@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsNumber, IsBoolean, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsBoolean, IsOptional, Min } from 'class-validator';
 
 export class CreateRoomDto {
   @IsString()
@@ -24,4 +24,9 @@ export class CreateRoomDto {
   @IsNumber()
   @IsNotEmpty()
   hotelId: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(1)
+  guestCapacity?: number;
 } 

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { Message, Reservation } from '../lib/api'
 import { getApi } from '../lib/api-config'
+import { useAuthStore } from './auth'
 
 interface MessagesState {
   messages: Message[]
@@ -26,7 +27,10 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
   loadReservations: async () => {
     try {
       set({ isLoading: true, error: null })
-      const data = await getApi().reservations.getReservations()
+      const role = useAuthStore.getState().user?.role;
+      const isAgent = role === 'agent';
+      const data = isAgent ? await getApi().reservations.getReservationsWithMessages() : await getApi().reservations.getReservations();
+
       set({
         reservations: data as any,
         selectedReservationId: data.length > 0 ? String(data[0].id) : null,

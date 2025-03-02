@@ -15,4 +15,8 @@ export class RoomsService {
     const room = this.roomRepository.create(createRoomDto);
     return this.roomRepository.save(room);
   }
+
+  async findOne(id: number): Promise<Room> {
+    return this.roomRepository.findOne({ where: { id } });
+  }
 }

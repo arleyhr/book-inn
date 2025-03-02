@@ -22,6 +22,9 @@ export class Room {
   @Column({ default: true })
   isAvailable: boolean;
 
+  @Column({ default: 1 })
+  guestCapacity: number;
+
   @Column()
   hotelId: number;
 

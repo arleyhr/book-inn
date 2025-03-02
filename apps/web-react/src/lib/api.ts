@@ -42,6 +42,7 @@ export type Booking = SDKBooking
 export interface CreateReservationDto extends Omit<SDKCreateReservationDto, 'checkIn' | 'checkOut'> {
   checkInDate: string
   checkOutDate: string
+  guestCount?: number
 }
 
 export interface Reservation extends Omit<SDKReservation, 'checkIn' | 'checkOut'> {
@@ -51,6 +52,11 @@ export interface Reservation extends Omit<SDKReservation, 'checkIn' | 'checkOut'
 
 export const searchHotels = async (searchParamsString: string) => {
   try {
+    if (searchParamsString.startsWith('name=')) {
+      const nameValue = searchParamsString.substring(5).trim()
+      return await getApi().hotels.search({ name: nameValue })
+    }
+
     const searchParams = new URLSearchParams(searchParamsString)
     const params: SearchHotelsParams = {}
 
@@ -63,9 +69,11 @@ export const searchHotels = async (searchParamsString: string) => {
     if (searchParams.has('maxPrice')) params.maxPrice = Number(searchParams.get('maxPrice'))
     if (searchParams.has('rating')) params.rating = Number(searchParams.get('rating'))
     if (searchParams.has('amenities')) params.amenities = searchParams.get('amenities') || undefined
+    if (searchParams.has('guests')) params.guests = Number(searchParams.get('guests'))
 
     return await getApi().hotels.search(params)
   } catch (error) {
+    console.error('Search hotels error:', error)
     throw getApi().handleError(error)
   }
 }

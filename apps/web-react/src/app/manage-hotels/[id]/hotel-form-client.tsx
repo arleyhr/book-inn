@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useHotelForm } from '../../../hooks/use-hotel-form'
 import { Button } from '../../../components/common/button'
 import { ImageUploadList } from '../../../components/common/image-upload-list'
-import { PlusIcon, TrashIcon, ArrowLeftIcon, MapPinIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, TrashIcon, ArrowLeftIcon, MapPinIcon, ClipboardDocumentListIcon, UserGroupIcon } from '@heroicons/react/24/outline'
 import { PageHeader } from '../../../components/common/page-header'
 import { MapLocationPicker } from '../../../components/common/map-location-picker'
 import type { Hotel } from '../../../lib/api'
@@ -259,14 +259,39 @@ export function HotelFormClient({ hotelId, initialHotel }: HotelFormClientProps)
                       <input
                         type="number"
                         step="0.01"
+                        min="0"
                         {...register(`rooms.${index}.taxes`, {
                           valueAsNumber: true
                         })}
                         className="w-full rounded-md border border-gray-300 dark:border-gray-600 p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                        placeholder="Enter tax percentage"
+                        placeholder="Enter tax percentage (0-15%)"
                       />
                       {errors.rooms?.[index]?.taxes && (
                         <p className="text-red-500 text-sm mt-1">{errors.rooms[index]?.taxes?.message}</p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">
+                        Tax is calculated as a percentage of the base price
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        <span className="flex items-center">
+                          <UserGroupIcon className="w-4 h-4 mr-1" />
+                          Guest Capacity
+                        </span>
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        {...register(`rooms.${index}.guestCapacity`, {
+                          valueAsNumber: true
+                        })}
+                        className="w-full rounded-md border border-gray-300 dark:border-gray-600 p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        placeholder="Enter guest capacity"
+                      />
+                      {errors.rooms?.[index]?.guestCapacity && (
+                        <p className="text-red-500 text-sm mt-1">{errors.rooms[index]?.guestCapacity?.message}</p>
                       )}
                     </div>
 

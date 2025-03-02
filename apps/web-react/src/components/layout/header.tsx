@@ -14,6 +14,8 @@ export function Header() {
   const { theme, toggleTheme } = useThemeStore();
   const [mounted, setMounted] = useState(false);
 
+  const isAgent = user?.role === 'agent';
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -34,11 +36,11 @@ export function Header() {
             />
           </Link>
           <nav className="hidden md:flex items-center gap-6">
+            <Link href="/hotels" className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 transition-colors">Hotels</Link>
             {isAuthenticated && (
               <>
                 <Link href="/manage-reservations" className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 transition-colors">My Reservations</Link>
-                <Link href="/messages" className="text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 transition-colors">Messages</Link>
-                {user?.role === 'agent' && (
+                {isAgent && (
                   <Link
                     href="/manage-hotels"
                     className="text-sm bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-full hover:bg-blue-100 transition-colors"
@@ -86,8 +88,9 @@ export function Header() {
                   </button>
                   <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-100 dark:border-gray-800 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                     <div className="py-1">
-                      <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800">Profile</Link>
-                      {user.role === 'agent' && (
+                      {isAgent && (<Link href="/manage-reservations" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800">Manage Reservations</Link>)}
+                      <Link href="/messages" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800">Messages</Link>
+                      {isAgent && (
                         <Link
                           href="/manage-hotels"
                           className="block px-4 py-2 text-sm text-blue-600 hover:bg-gray-50 dark:text-blue-400 dark:hover:bg-gray-800"
@@ -95,6 +98,7 @@ export function Header() {
                           Manage Hotels
                         </Link>
                       )}
+                      <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800">Profile</Link>
                       <button
                         onClick={logout}
                         className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 dark:text-red-400 dark:hover:bg-gray-800"

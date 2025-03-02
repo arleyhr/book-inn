@@ -1,10 +1,10 @@
 import { useEffect } from 'react'
 import { useSearchStore } from '../store/search'
-import { useDebounce } from './use-debounce'
+import { useDebounceValue } from './use-debounce-value'
 
 export const useHotelSearch = (defaultQuery?: string) => {
   const { searchInput, isLoading, hotels, setSearchInput, searchHotelsAction } = useSearchStore()
-  const debouncedSearch = useDebounce(searchInput, 300)
+  const debouncedSearch = useDebounceValue(searchInput, 300)
 
   useEffect(() => {
     if (defaultQuery) {

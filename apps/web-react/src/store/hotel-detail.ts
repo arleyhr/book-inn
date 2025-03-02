@@ -10,13 +10,19 @@ interface DateRange {
   endDate: string | undefined
 }
 
+interface GuestInfo {
+  count: number
+}
+
 interface HotelDetailStore {
   hotel: Hotel | null
   selectedDates: DateRange
+  guestInfo: GuestInfo
   unavailableRooms: number[]
   isValidating: boolean
   setHotel: (hotel: Hotel) => void
   setSelectedDates: (dates: DateRange) => void
+  setGuestInfo: (guestInfo: GuestInfo) => void
   validateRoomAvailability: () => Promise<void>
   reset: () => void
 }
@@ -26,6 +32,9 @@ const initialState = {
   selectedDates: {
     startDate: undefined,
     endDate: undefined
+  },
+  guestInfo: {
+    count: 1
   },
   unavailableRooms: [],
   isValidating: false
@@ -38,8 +47,12 @@ export const useHotelDetailStore = create<HotelDetailStore>((set, get) => ({
     set({ selectedDates: dates })
     set({ unavailableRooms: [] })
   },
+  setGuestInfo: (guestInfo) => {
+    set({ guestInfo })
+    set({ unavailableRooms: [] })
+  },
   validateRoomAvailability: async () => {
-    const { hotel, selectedDates } = get()
+    const { hotel, selectedDates, guestInfo } = get()
     if (!hotel || !selectedDates.startDate || !selectedDates.endDate) return
 
     set({ isValidating: true })
@@ -49,7 +62,8 @@ export const useHotelDetailStore = create<HotelDetailStore>((set, get) => ({
       const response = await getApi().reservations.validateRoomAvailability(
         hotel.id,
         selectedDates.startDate,
-        selectedDates.endDate
+        selectedDates.endDate,
+        guestInfo.count
       )
       set({ unavailableRooms: response.unavailableRooms })
     } catch (error) {

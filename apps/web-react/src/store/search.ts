@@ -19,7 +19,8 @@ export const useSearchStore = create<SearchState>((set) => ({
   searchHotelsAction: async (query) => {
     set({ isLoading: true })
     try {
-      const hotels = await searchHotels(query || '')
+      const queryString = typeof query === 'string' ? query : ''
+      const hotels = await searchHotels(queryString)
       set({ hotels })
     } catch (error) {
       console.error('Error searching hotels:', error)
