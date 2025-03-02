@@ -53,6 +53,7 @@ export function useHotelForm({ hotelId, initialHotel }: UseHotelFormProps) {
           basePrice: room.basePrice,
           taxes: room.taxes,
           isAvailable: room.isAvailable,
+          guestCapacity: room.guestCapacity || 1,
           id: Number(room.id)
         }))
       })
@@ -70,7 +71,8 @@ export function useHotelForm({ hotelId, initialHotel }: UseHotelFormProps) {
               ...room,
               basePrice: Number(room.basePrice),
               taxes: Number(room.taxes),
-              isAvailable: room.isAvailable ?? true
+              isAvailable: room.isAvailable ?? true,
+              guestCapacity: Number(room.guestCapacity) || 1
             })) || []
           }
         })
@@ -82,7 +84,8 @@ export function useHotelForm({ hotelId, initialHotel }: UseHotelFormProps) {
             ...(room.id ? { id: Number(room.id) } : {}),
             basePrice: Number(room.basePrice),
             taxes: Number(room.taxes),
-            isAvailable: room.isAvailable ?? true
+            isAvailable: room.isAvailable ?? true,
+            guestCapacity: Number(room.guestCapacity) || 1
           })) || []
         })
       }
@@ -98,7 +101,8 @@ export function useHotelForm({ hotelId, initialHotel }: UseHotelFormProps) {
       basePrice: 0,
       taxes: 0,
       location: '',
-      isAvailable: true
+      isAvailable: true,
+      guestCapacity: 1
     })
   }
 

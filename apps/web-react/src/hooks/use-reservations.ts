@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useToast } from '../components/common/use-toast'
 import { getApi } from '../lib/api-config'
 import type { Reservation, OccupancyStats, RevenueStats } from '../lib/api'
+import { useAuthStore } from '../store/auth'
 
 interface UseReservationsReturn {
   reservations: Reservation[]
@@ -14,12 +15,13 @@ interface UseReservationsReturn {
 
 export function useReservations(): UseReservationsReturn {
   const [reservations, setReservations] = useState<Reservation[]>([])
+  const { user } = useAuthStore()
   const [isLoading, setIsLoading] = useState(true)
   const { toast } = useToast()
 
   const loadReservations = async () => {
     try {
-      const data = await getApi().reservations.getReservations()
+      const data = await getApi().reservations.getReservations(user?.role)
       setReservations(data)
     } catch (error) {
       toast({

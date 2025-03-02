@@ -48,6 +48,10 @@ export class ApiSdk {
   }
 
   handleError(error: unknown): never {
+    if (error?.response?.data?.message) {
+      throw new Error(error.response.data.message)
+    }
+
     if (error instanceof Error) {
       if ('status' in error) {
         const apiError = error as ApiError

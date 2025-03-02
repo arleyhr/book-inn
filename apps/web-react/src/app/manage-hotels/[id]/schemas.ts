@@ -6,6 +6,7 @@ export const roomSchema = z.object({
   taxes: z.number().min(0, 'Taxes must be positive'),
   location: z.string().min(1, 'Room location is required'),
   isAvailable: z.boolean().default(true),
+  guestCapacity: z.number().min(1, 'Guest capacity must be at least 1').default(1),
   id: z.number().optional()
 })
 

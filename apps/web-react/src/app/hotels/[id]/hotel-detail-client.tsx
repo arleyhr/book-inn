@@ -6,20 +6,24 @@ import { useToast } from '../../../components/common/use-toast'
 import { MapLocationPicker } from '../../../components/common/map-location-picker'
 import { RoomCard } from '../../../components/hotels/room-card'
 import { useHotelDetailStore, type Hotel } from '../../../store/hotel-detail'
+import { UserGroupIcon } from '@heroicons/react/24/outline'
 
 interface HotelDetailClientProps {
   hotel: Hotel
   initialCheckIn?: string
   initialCheckOut?: string
+  initialGuests?: number
 }
 
-export function HotelDetailClient({ hotel, initialCheckIn, initialCheckOut }: HotelDetailClientProps) {
+export function HotelDetailClient({ hotel, initialCheckIn, initialCheckOut, initialGuests }: HotelDetailClientProps) {
   const router = useRouter()
   const { toast } = useToast()
   const {
     setHotel,
     selectedDates,
     setSelectedDates,
+    guestInfo,
+    setGuestInfo,
     unavailableRooms,
     isValidating,
     validateRoomAvailability,
@@ -33,14 +37,18 @@ export function HotelDetailClient({ hotel, initialCheckIn, initialCheckOut }: Ho
       endDate: initialCheckOut
     })
 
+    if (initialGuests) {
+      setGuestInfo({ count: initialGuests })
+    }
+
     return () => reset()
-  }, [hotel, initialCheckIn, initialCheckOut, setHotel, setSelectedDates, reset])
+  }, [hotel, initialCheckIn, initialCheckOut, initialGuests, setHotel, setSelectedDates, setGuestInfo, reset])
 
   useEffect(() => {
     if (selectedDates.startDate && selectedDates.endDate) {
       validateRoomAvailability()
     }
-  }, [selectedDates.startDate, selectedDates.endDate, validateRoomAvailability])
+  }, [selectedDates.startDate, selectedDates.endDate, guestInfo.count, validateRoomAvailability])
 
   const handleBookRoom = (roomId: number) => {
     if (!selectedDates.startDate || !selectedDates.endDate) {
@@ -61,11 +69,16 @@ export function HotelDetailClient({ hotel, initialCheckIn, initialCheckOut }: Ho
     const searchParams = new URLSearchParams({
       checkIn: checkInDate.toISOString(),
       checkOut: checkOutDate.toISOString(),
-      roomId: roomId.toString()
+      roomId: roomId.toString(),
+      guests: guestInfo.count.toString()
     })
 
     router.push(`/hotels/${hotel.id}/book?${searchParams.toString()}`)
   }
+
+  const rating = hotel.reviews.length > 0
+    ? (hotel.reviews.reduce((acc, review) => acc + review.rating, 0) / hotel.reviews.length).toFixed(1)
+    : null
 
   return (
     <main className="container mx-auto px-4 py-8 pt-20">
@@ -118,20 +131,8 @@ export function HotelDetailClient({ hotel, initialCheckIn, initialCheckOut }: Ho
           <div>
             <h1 className="text-3xl font-bold">{hotel.name}</h1>
             <div className="flex items-center mt-2 space-x-2">
-              <span className="flex items-center">
-                {Array.from({ length: Math.floor(hotel.rating || 0) }).map((_, i) => (
-                  <svg
-                    key={i}
-                    className="w-5 h-5 text-yellow-400"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                ))}
-              </span>
               <span className="text-gray-600">
-                {Number(hotel.rating || 0).toFixed(1)} ({hotel.reviews.length} reviews)
+                {rating ? `${rating} (${hotel.reviews.length} reviews)` : 'No reviews yet'}
               </span>
             </div>
             {hotel.address && (
@@ -190,16 +191,34 @@ export function HotelDetailClient({ hotel, initialCheckIn, initialCheckOut }: Ho
                 })
               }}
             />
+
+            <div className="mt-4">
+              <label className="block text-sm font-medium mb-2">Number of guests</label>
+              <div className="relative">
+                <UserGroupIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <select
+                  className="w-full h-12 pl-10 pr-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 appearance-none"
+                  value={guestInfo.count}
+                  onChange={(e) => setGuestInfo({ count: parseInt(e.target.value) })}
+                >
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                    <option key={num} value={num}>{num} {num === 1 ? 'guest' : 'guests'}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
             {hotel.rooms.length > 0 ? (
               <div className="mt-4 space-y-4">
                 {hotel.rooms.map((room) => (
                   <RoomCard
                     key={room.id}
                     room={room}
-                    isAvailable={!unavailableRooms.includes(room.id)}
+                    isAvailable={!unavailableRooms.includes(room.id) && (!room.guestCapacity || room.guestCapacity >= guestInfo.count)}
                     isValidating={isValidating}
                     onBookRoom={handleBookRoom}
                     showAvailabilityMessage={Boolean(selectedDates.startDate && selectedDates.endDate)}
+                    guestCapacity={room.guestCapacity}
+                    requestedGuests={guestInfo.count}
                   />
                 ))}
               </div>

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import DatePicker from 'react-datepicker';
 import Select from 'react-select';
 import { RocketLaunchIcon } from '@heroicons/react/24/solid';
-import { CalendarDaysIcon } from '@heroicons/react/24/outline';
+import { CalendarDaysIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -131,6 +131,7 @@ export function SearchBar({ onSearch, className = '' }: SearchBarProps) {
       hotel: '',
       checkIn: '',
       checkOut: '',
+      guests: 1,
     },
   });
 
@@ -141,6 +142,7 @@ export function SearchBar({ onSearch, className = '' }: SearchBarProps) {
       hotel: selectedHotel?.id.toString() || '',
       checkIn: data.checkIn,
       checkOut: data.checkOut,
+      guests: data.guests,
     });
   };
 
@@ -201,7 +203,11 @@ export function SearchBar({ onSearch, className = '' }: SearchBarProps) {
                   ClearIndicator,
                   Input: CustomInput,
                 }}
-                onInputChange={(newValue: string) => setSearchInput(newValue)}
+                onInputChange={(newValue: string) => {
+                  if (typeof newValue === 'string') {
+                    setSearchInput(newValue)
+                  }
+                }}
                 className="text-gray-900 dark:text-gray-200 text-[15px]"
                 isSearchable={true}
                 isClearable={true}
@@ -221,7 +227,7 @@ export function SearchBar({ onSearch, className = '' }: SearchBarProps) {
         </div>
       </div>
 
-      <div className="flex-[1.5] group">
+      <div className="flex-1 group">
         <label className="text-gray-700 dark:text-gray-300 font-medium text-sm block mb-2.5 ml-1">
           When?
         </label>
@@ -271,7 +277,30 @@ export function SearchBar({ onSearch, className = '' }: SearchBarProps) {
           )}
         />
       </div>
-      <div className="flex items-end">
+      <div className="flex-1 group">
+        <label className="text-gray-700 dark:text-gray-300 font-medium text-sm block mb-2.5 ml-1">
+          Guests
+        </label>
+        <div className="relative">
+          <UserGroupIcon className={`w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400`} />
+          <Controller
+            name="guests"
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <select
+                className={`w-full h-[68px] px-5 pl-12 rounded-2xl border transition-all bg-gray-50 dark:bg-gray-800/80 text-gray-900 dark:text-gray-200 text-[15px] appearance-none cursor-pointer border-gray-200 dark:border-gray-700 hover:border-blue-400 hover:bg-white dark:hover:bg-gray-800`}
+                value={value}
+                onChange={(e) => onChange(parseInt(e.target.value))}
+              >
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                  <option key={num} value={num}>{num} {num === 1 ? 'guest' : 'guests'}</option>
+                ))}
+              </select>
+            )}
+          />
+        </div>
+      </div>
+      <div className="flex items-end self-end">
         <button
           type="submit"
           className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white p-5 rounded-2xl w-full md:w-[68px] h-[68px] flex items-center justify-center shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-95"

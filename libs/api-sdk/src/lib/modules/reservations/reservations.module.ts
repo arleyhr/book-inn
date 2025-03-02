@@ -1,5 +1,5 @@
-import { User } from '../users/users.module';
 import { HttpClient } from '../../client';
+import { Hotel } from '../hotels/hotels.module';
 
 export interface Room {
   id: number;
@@ -21,6 +21,21 @@ export interface Reservation {
   hotelId: string;
   roomId: string;
   messages: Message[];
+  room: Room;
+  hotel: Hotel;
+  guestName: string;
+  guestPhone: string;
+  guestEmail: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  guestCount: number;
+  cancellationReason: string;
+  cancelledAt: string;
+  cancelledBy: string;
+  cancelledByUser: string;
+  confirmedAt: string;
+  confirmedBy: string;
+  confirmedByUser: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -38,7 +53,13 @@ export interface CreateReservationDto {
   checkOut: string;
   guests: number;
   hotelId: string;
-  roomId: string;
+  roomId: number;
+  guestName: string;
+  guestPhone: string;
+  guestEmail: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  guestCount: number;
 }
 
 export interface CreateMessageDto {
@@ -100,18 +121,23 @@ export interface ListReservationsDto {
 export class ReservationsModule {
   constructor(private readonly http: HttpClient) {}
 
-  async getReservations(): Promise<Reservation[]> {
-    const response = await this.http.get<Reservation[]>('/reservations');
+  async getReservations(role?: 'agent' | 'traveler'): Promise<Reservation[]> {
+    const response = await this.http.get<Reservation[]>(`/reservations`, { params: { role } });
     return response.data;
   }
 
-  async getReservation(id: string): Promise<Reservation> {
+  async getReservationsByHotelId(hotelId: number): Promise<Reservation[]> {
+    const response = await this.http.get<Reservation[]>(`/reservations/hotel/${hotelId}`);
+    return response.data;
+  }
+
+  async getReservation(id: number): Promise<Reservation> {
     const response = await this.http.get<Reservation>(`/reservations/${id}`);
     return response.data;
   }
 
   async createReservation(data: CreateReservationDto): Promise<Reservation> {
-    const response = await this.http.post<Reservation>('/reservations', data);
+    const response = await this.http.post<Reservation>('/reservations', {...data, roomId: +data.roomId });
     return response.data;
   }
 
@@ -160,5 +186,25 @@ export class ReservationsModule {
       },
     })
     return response.data
+  }
+
+  async validateRoomAvailability(hotelId: number, checkIn: string, checkOut: string, guestCount: number): Promise<{ available: boolean; unavailableRooms: number[] }> {
+    const response = await this.http.get<{ available: boolean; unavailableRooms: number[] }>(
+      `/reservations/fetch/validate-availability`,
+      {
+        params: {
+          hotelId: hotelId.toString(),
+          checkIn,
+          checkOut,
+          guestCount: guestCount.toString(),
+        },
+      }
+    )
+    return response.data
+  }
+
+  async getReservationsWithMessages(): Promise<Reservation[]> {
+    const response = await this.http.get<Reservation[]>('/reservations/fetch/with-messages');
+    return response.data;
   }
 }

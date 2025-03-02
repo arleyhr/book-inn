@@ -10,6 +10,7 @@ export interface Hotel {
   rating: number;
   images: string[];
   placeId: string;
+  maxGuestCapacity: number;
   rooms: {
     id: string;
     name: string;
@@ -17,8 +18,10 @@ export interface Hotel {
     basePrice: number;
     taxes: number;
     capacity: number;
+    guestCapacity: number;
     images: string[];
     hotelId: string;
+    isAvailable: boolean;
   }[];
   reviews: {
     id: string;
@@ -46,6 +49,7 @@ export interface SearchHotelsParams {
   maxPrice?: string;
   rating?: string;
   amenities?: string;
+  guests?: number;
 }
 
 export interface CreateHotelDto {
@@ -55,6 +59,7 @@ export interface CreateHotelDto {
   city: string;
   country: string;
   images: string[];
+  maxGuestCapacity?: number;
 }
 
 export interface CreateRoomDto {
@@ -62,6 +67,7 @@ export interface CreateRoomDto {
   description: string;
   price: number;
   capacity: number;
+  guestCapacity: number;
   images: string[];
 }
 

@@ -33,7 +33,7 @@ export function MessagesClient() {
 
   useEffect(() => {
     if (!accessToken) {
-      router.push('/login')
+      router.push('/')
       return
     }
     loadReservations()

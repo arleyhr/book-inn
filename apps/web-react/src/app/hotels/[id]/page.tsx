@@ -35,6 +35,7 @@ export default async function HotelPage(props: Promise<PageProps>) {
       hotel={defaultHotelData}
       initialCheckIn={searchParams.checkIn as string | undefined}
       initialCheckOut={searchParams.checkOut as string | undefined}
+      initialGuests={searchParams.guests ? parseInt(searchParams.guests as string) : undefined}
     />
   )
 }

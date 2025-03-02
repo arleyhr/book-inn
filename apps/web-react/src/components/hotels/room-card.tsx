@@ -1,4 +1,4 @@
-import { XCircleIcon } from '@heroicons/react/24/outline'
+import { XCircleIcon, UserGroupIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline'
 import type { Room } from '../../store/hotel-detail'
 
 interface RoomCardProps {
@@ -7,6 +7,8 @@ interface RoomCardProps {
   isValidating: boolean
   onBookRoom: (roomId: number) => void
   showAvailabilityMessage?: boolean
+  guestCapacity?: number
+  requestedGuests?: number
 }
 
 export function RoomCard({
@@ -14,7 +16,9 @@ export function RoomCard({
   isAvailable,
   isValidating,
   onBookRoom,
-  showAvailabilityMessage = true
+  showAvailabilityMessage = true,
+  guestCapacity,
+  requestedGuests
 }: RoomCardProps) {
   return (
     <div
@@ -25,10 +29,25 @@ export function RoomCard({
       <div>
         <h3 className="font-semibold dark:text-gray-100">{room.type}</h3>
         <p className="text-gray-600 dark:text-gray-400">{room.location}</p>
+        {guestCapacity && (
+          <p className="text-gray-600 dark:text-gray-400 text-sm mt-1 flex items-center gap-1">
+            <UserGroupIcon className="h-4 w-4" />
+            Max capacity: {guestCapacity} {guestCapacity === 1 ? 'guest' : 'guests'}
+          </p>
+        )}
         {!isAvailable && showAvailabilityMessage && (
           <p className="text-red-600 dark:text-red-400 text-sm mt-1 flex items-center gap-1">
-            <XCircleIcon className="h-4 w-4" />
-            Not available for selected dates
+            {guestCapacity && requestedGuests && guestCapacity < requestedGuests ? (
+              <>
+                <ExclamationCircleIcon className="h-4 w-4" />
+                This room can only accommodate {guestCapacity} {guestCapacity === 1 ? 'person' : 'people'}
+              </>
+            ) : (
+              <>
+                <XCircleIcon className="h-4 w-4" />
+                Not available for selected dates
+              </>
+            )}
           </p>
         )}
       </div>
@@ -36,7 +55,7 @@ export function RoomCard({
         <p className="text-lg font-bold dark:text-gray-100">
           ${room.basePrice.toFixed(2)}
         </p>
-        <p className="text-sm text-gray-500 dark:text-gray-400">per night + taxes</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">per night + {room.taxes}% tax</p>
         <button
           onClick={() => onBookRoom(room.id)}
           className={`mt-2 px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${

@@ -18,7 +18,6 @@ import { PageHeader } from '../../../components/common/page-header';
 import { ReservationStatus } from '../../../components/messages/reservation-status';
 import { CancelReservationModal } from '../../../components/reservations/cancel-reservation-modal';
 import { MapLocationPicker } from '../../../components/common/map-location-picker';
-import { ScrollArea } from '../../../components/common/scroll-area';
 import { Textarea } from '../../../components/common/textarea';
 import {
   StarIcon,
@@ -179,7 +178,7 @@ export function ReservationDetailClient({
             have permission to view it.
           </p>
           <Button
-            onClick={() => router.push('/my-reservations')}
+            onClick={() => router.push('/manage-reservations')}
             className="mt-4"
           >
             Go to My Reservations
@@ -264,7 +263,7 @@ export function ReservationDetailClient({
                           Room Details
                         </h4>
                         <p className="text-gray-600 dark:text-gray-400">
-                          Room #{reservation.room?.number}
+                          Room #{reservation.room?.location}
                         </p>
                         <p className="text-gray-600 dark:text-gray-400">
                           {reservation.room?.type}
@@ -387,6 +386,36 @@ export function ReservationDetailClient({
                       <p className="text-gray-600 dark:text-gray-400">
                         Check-out:{' '}
                         {format(new Date(reservation.checkOutDate), 'PPP')}
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Number of Guests
+                      </h4>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        {reservation.guestCount || 1} {(reservation.guestCount || 1) === 1 ? 'guest' : 'guests'}
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Guest Information
+                      </h4>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Name: {reservation.guestName}
+                      </p>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Phone: {reservation.guestPhone}
+                      </p>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Email: {reservation.guestEmail}
+                      </p>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Emergency contact: {reservation.emergencyContactName}
+                      </p>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Emergency contact phone: {reservation.emergencyContactPhone}
                       </p>
                     </div>
 
