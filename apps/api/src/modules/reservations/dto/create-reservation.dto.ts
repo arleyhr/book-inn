@@ -34,4 +34,8 @@ export class CreateReservationDto {
   @IsNumber()
   @IsNotEmpty()
   roomId: number;
+
+  @IsNumber()
+  @IsOptional()
+  guestCount?: number;
 }

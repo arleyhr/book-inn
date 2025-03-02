@@ -1,4 +1,4 @@
-import { IsOptional, IsNumber, IsDate } from 'class-validator';
+import { IsOptional, IsNumber, IsDate, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class ListReservationsDto {
@@ -15,4 +15,8 @@ export class ListReservationsDto {
   @Type(() => Date)
   @IsDate()
   endDate?: Date;
+
+  @IsOptional()
+  @IsString()
+  role?: 'agent' | 'traveler';
 }

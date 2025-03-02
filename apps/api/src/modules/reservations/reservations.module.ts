@@ -9,11 +9,15 @@ import { StatisticsController } from './controllers/statistics.controller';
 import { StatisticsService } from './services/statistics.service';
 import { MessagesController } from './controllers/messages.controller';
 import { MessagesService } from './services/messages.service';
-
+import { EmailModule } from '../email/email.module';
+import { RoomsService } from '../hotels/services/rooms.service';
 @Module({
-  imports: [TypeOrmModule.forFeature([Reservation, ReservationMessage, Room])],
+  imports: [
+    TypeOrmModule.forFeature([Reservation, ReservationMessage, Room]),
+    EmailModule
+  ],
   controllers: [ReservationsController, StatisticsController, MessagesController],
-  providers: [ReservationsService, StatisticsService, MessagesService],
-  exports: [ReservationsService, StatisticsService, MessagesService],
+  providers: [ReservationsService, StatisticsService, MessagesService, RoomsService],
+  exports: [ReservationsService, StatisticsService, MessagesService, RoomsService],
 })
 export class ReservationsModule {}

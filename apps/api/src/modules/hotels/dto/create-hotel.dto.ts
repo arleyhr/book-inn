@@ -24,6 +24,12 @@ export class CreateRoomDto {
   @IsNotEmpty()
   location: string;
 
+  @IsNumber()
+  @IsNotEmpty()
+  @Min(1)
+  @IsOptional()
+  guestCapacity?: number;
+
   @IsBoolean()
   @IsOptional()
   isAvailable?: boolean;
@@ -57,6 +63,11 @@ export class CreateHotelDto {
   @Min(-180)
   @Max(180)
   longitude?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  maxGuestCapacity?: number;
 
   @IsArray()
   @IsString({ each: true })

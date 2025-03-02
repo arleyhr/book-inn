@@ -102,13 +102,15 @@ export class StatisticsService {
       const checkOut = new Date(reservation.checkOutDate);
       const nights = Math.max(1, differenceInDays(checkOut, checkIn));
       const basePrice = Number(reservation.room.basePrice);
-      const taxes = Number(reservation.room.taxes);
-      const total = (basePrice + taxes) * nights;
+      const taxPercentage = Number(reservation.room.taxes);
+      const taxAmount = basePrice * (taxPercentage / 100);
+      const total = (basePrice + taxAmount) * nights;
 
       this.logger.debug(`Reservation ${reservation.id} revenue calculation:`, {
         nights,
         basePrice,
-        taxes,
+        taxPercentage,
+        taxAmount,
         total
       });
 

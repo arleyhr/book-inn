@@ -42,6 +42,9 @@ export class Reservation {
   @Column()
   roomId: number;
 
+  @Column({ default: 1 })
+  guestCount: number;
+
   @Column({
     type: 'enum',
     enum: ReservationStatus,

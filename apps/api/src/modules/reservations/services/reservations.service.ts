@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, ForbiddenException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Reservation, ReservationStatus } from '../entities/reservation.entity';
@@ -6,23 +6,38 @@ import { ListReservationsDto } from '../dto/list-reservations.dto';
 import { CreateReservationDto } from '../dto/create-reservation.dto';
 import { CancelReservationDto } from '../dto/cancel-reservation.dto';
 import { ConfirmReservationDto } from '../dto/confirm-reservation.dto';
+import { ReservationEmailService } from '../../email/services/reservation-email.service';
+import { User } from '../../users/entities/user.entity';
+import { RoomsService } from '../../hotels/services/rooms.service';
 
 const CANCELLATION_DEADLINE_DAYS = 3;
 
 @Injectable()
 export class ReservationsService {
+  private readonly logger = new Logger(ReservationsService.name);
+
   constructor(
     @InjectRepository(Reservation)
     private readonly reservationRepository: Repository<Reservation>,
+    private readonly roomsService: RoomsService,
+    private readonly reservationEmailService: ReservationEmailService
   ) {}
 
-  async findAll(filters: ListReservationsDto = {}): Promise<Reservation[]> {
+  async findAll(user: User, filters: ListReservationsDto = {}): Promise<Reservation[]> {
     const query = this.reservationRepository
       .createQueryBuilder('reservation')
       .leftJoinAndSelect('reservation.room', 'room')
       .leftJoinAndSelect('room.hotel', 'hotel')
       .leftJoinAndSelect('reservation.user', 'user')
       .orderBy('reservation.createdAt', 'DESC');
+
+    if (filters.role === 'agent' && user.role === 'agent') {
+      query.andWhere('hotel.agentId = :agentId', { agentId: user.id });
+    }
+
+    if (filters.role === 'traveler') {
+      query.andWhere('reservation.userId = :userId', { userId: user.id });
+    }
 
     if (filters.hotelId) {
       query.andWhere('hotel.id = :hotelId', { hotelId: filters.hotelId });
@@ -146,26 +161,51 @@ export class ReservationsService {
   }
 
   async create(createReservationDto: CreateReservationDto): Promise<Reservation> {
-    const existingReservation = await this.reservationRepository
-      .createQueryBuilder('reservation')
-      .where('reservation.roomId = :roomId', { roomId: createReservationDto.roomId })
-      .andWhere(
-        '((:checkIn BETWEEN reservation.checkInDate AND reservation.checkOutDate) OR (:checkOut BETWEEN reservation.checkInDate AND reservation.checkOutDate))',
-        {
-          checkIn: createReservationDto.checkInDate,
-          checkOut: createReservationDto.checkOutDate,
-        },
-      )
-      .getOne();
+    const room = await this.roomsService.findOne(createReservationDto.roomId);
 
-    if (existingReservation) {
+    if (!room) {
+      throw new NotFoundException('Room not found');
+    }
+
+    const existingReservations = await this.validateRoomAvailability(room.hotelId, createReservationDto.checkInDate, createReservationDto.checkOutDate);
+
+    const roomIsUnavailable = existingReservations.unavailableRooms.includes(createReservationDto.roomId);
+
+    if (roomIsUnavailable) {
       throw new ConflictException('Room is not available for the selected dates');
+    }
+
+    if ((room.guestCapacity - createReservationDto.guestCount) < 0) {
+      throw new ConflictException('Room capacity is insufficient for the selected number of guests');
     }
 
     const reservation = this.reservationRepository.create(createReservationDto);
     const savedReservation = await this.reservationRepository.save(reservation);
 
-    return this.findOne(savedReservation.id);
+    const completeReservation = await this.findOne(savedReservation.id);
+
+    try {
+      if (!completeReservation.room || !completeReservation.room.hotel) {
+        this.logger.warn(
+          `Cannot send confirmation email for reservation #${completeReservation.id}: Missing room or hotel data`
+        );
+        return completeReservation;
+      }
+
+      await this.reservationEmailService.sendReservationConfirmation(
+        completeReservation,
+        completeReservation.room,
+        completeReservation.room.hotel
+      );
+      this.logger.log(`Reservation confirmation email sent for reservation #${completeReservation.id}`);
+    } catch (error) {
+      this.logger.error(
+        `Error sending reservation confirmation email for reservation #${completeReservation.id}: ${error.message}`,
+        error.stack
+      );
+    }
+
+    return completeReservation;
   }
 
   async confirm(confirmDto: ConfirmReservationDto, agentId: number): Promise<Reservation> {
@@ -179,7 +219,30 @@ export class ReservationsService {
     reservation.confirmedAt = new Date();
     reservation.confirmedBy = agentId;
 
-    return this.reservationRepository.save(reservation);
+    const savedReservation = await this.reservationRepository.save(reservation);
+
+    try {
+      if (!savedReservation.room || !savedReservation.room.hotel) {
+        this.logger.warn(
+          `Cannot send confirmation email for reservation #${savedReservation.id}: Missing room or hotel data`
+        );
+        return savedReservation;
+      }
+
+      await this.reservationEmailService.sendReservationConfirmation(
+        savedReservation,
+        savedReservation.room,
+        savedReservation.room.hotel
+      );
+      this.logger.log(`Confirmation email sent for reservation #${savedReservation.id}`);
+    } catch (error) {
+      this.logger.error(
+        `Error sending confirmation email for reservation #${savedReservation.id}: ${error.message}`,
+        error.stack
+      );
+    }
+
+    return savedReservation;
   }
 
   async cancel(cancelDto: CancelReservationDto, userId: number, isAgent: boolean): Promise<Reservation> {
@@ -237,6 +300,43 @@ export class ReservationsService {
     }
 
     reservation.status = status;
-    return this.reservationRepository.save(reservation);
+    const savedReservation = await this.reservationRepository.save(reservation);
+
+    if (status === ReservationStatus.CONFIRMED) {
+      try {
+        if (!savedReservation.room || !savedReservation.room.hotel) {
+          this.logger.warn(
+            `Cannot send confirmation email for reservation #${savedReservation.id}: Missing room or hotel data`
+          );
+          return savedReservation;
+        }
+
+        await this.reservationEmailService.sendReservationConfirmation(
+          savedReservation,
+          savedReservation.room,
+          savedReservation.room.hotel
+        );
+        this.logger.log(`Confirmation email sent for reservation #${savedReservation.id}`);
+      } catch (error) {
+        this.logger.error(
+          `Error sending confirmation email for reservation #${savedReservation.id}: ${error.message}`,
+          error.stack
+        );
+      }
+    }
+
+    return savedReservation;
+  }
+
+  fetchWithMessages() {
+    return this.reservationRepository
+      .createQueryBuilder('reservation')
+      .leftJoinAndSelect('reservation.room', 'room')
+      .leftJoinAndSelect('room.hotel', 'hotel')
+      .leftJoinAndSelect('reservation.user', 'user')
+      .leftJoinAndSelect('reservation.messages', 'messages')
+      .where('messages.id IS NOT NULL')
+      .orderBy('reservation.createdAt', 'DESC')
+      .getMany();
   }
 }

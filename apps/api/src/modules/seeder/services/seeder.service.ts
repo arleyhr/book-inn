@@ -122,13 +122,15 @@ export class SeederService {
     for (let i = 0; i < numberOfRooms; i++) {
       const priceFactor = 0.8 + (Math.random() * 2.2);
       const finalBasePrice = Math.round(basePrice * priceFactor);
-      const taxRate = (16 + Math.random() * 5) / 100;
+      const taxPercentage = Math.round((Math.random() * 15) * 100) / 100;
+      const guestCapacity = this.getRandomNumber(1, 6);
 
       rooms.push({
         type: this.getRandomElement(this.roomTypes),
         basePrice: finalBasePrice,
-        taxes: Math.round(finalBasePrice * taxRate),
-        location: this.getRandomElement(this.roomLocations)
+        taxes: taxPercentage,
+        location: this.getRandomElement(this.roomLocations),
+        guestCapacity
       });
     }
 

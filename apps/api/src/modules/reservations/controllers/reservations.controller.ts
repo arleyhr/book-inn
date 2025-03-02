@@ -18,12 +18,11 @@ export class ReservationsController {
   constructor(private readonly reservationsService: ReservationsService) {}
 
   @Get()
-  @Roles('agent')
-  async findAllForAgent(
+  async findAll(
     @GetUser() user: User,
     @Query() filters: ListReservationsDto,
   ) {
-    return this.reservationsService.findByAgent(user.id, filters);
+    return this.reservationsService.findAll(user, filters);
   }
 
   @Get('hotel/:hotelId')
@@ -81,6 +80,11 @@ export class ReservationsController {
     @GetUser() user: User,
   ) {
     return this.reservationsService.updateStatus(+id, updateStatusDto.status, user.id);
+  }
+
+  @Get('fetch/with-messages')
+  async fetchWithMessages() {
+    return this.reservationsService.fetchWithMessages();
   }
 
   @Get('fetch/validate-availability')
