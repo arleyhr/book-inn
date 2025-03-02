@@ -48,8 +48,8 @@ export class ApiSdk {
   }
 
   handleError(error: unknown): never {
-    if (error?.response?.data?.message) {
-      throw new Error(error.response.data.message)
+    if (error && typeof error === 'object' && 'response' in error && error.response && typeof error.response === 'object' && 'data' in error.response && error.response.data && typeof error.response.data === 'object' && 'message' in error.response.data) {
+      throw new Error(String(error.response.data.message))
     }
 
     if (error instanceof Error) {

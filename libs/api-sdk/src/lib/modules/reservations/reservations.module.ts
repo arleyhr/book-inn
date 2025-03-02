@@ -122,7 +122,11 @@ export class ReservationsModule {
   constructor(private readonly http: HttpClient) {}
 
   async getReservations(role?: 'agent' | 'traveler'): Promise<Reservation[]> {
-    const response = await this.http.get<Reservation[]>(`/reservations`, { params: { role } });
+    const params: Record<string, string> = {};
+    if (role) {
+      params['role'] = role;
+    }
+    const response = await this.http.get<Reservation[]>(`/reservations`, { params });
     return response.data;
   }
 
