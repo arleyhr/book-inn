@@ -9,6 +9,7 @@ import { UsersService } from '../../users/services/users.service';
 import { UserRole } from '../../users/entities/user.entity';
 import { ReservationsService } from '../../reservations/services/reservations.service';
 import { MessagesService } from '../../reservations/services/messages.service';
+import { ReservationStatus } from '../../reservations/entities/reservation.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -123,10 +124,26 @@ export class SeederService {
       const priceFactor = 0.8 + (Math.random() * 2.2);
       const finalBasePrice = Math.round(basePrice * priceFactor);
       const taxPercentage = Math.round((Math.random() * 15) * 100) / 100;
-      const guestCapacity = this.getRandomNumber(1, 6);
+
+      const roomType = this.getRandomElement(this.roomTypes);
+      let guestCapacity;
+
+      if (roomType.includes('Individual')) {
+        guestCapacity = 1;
+      } else if (roomType.includes('Doble')) {
+        guestCapacity = 2;
+      } else if (roomType.includes('Triple')) {
+        guestCapacity = 3;
+      } else if (roomType.includes('Familiar')) {
+        guestCapacity = this.getRandomNumber(4, 6);
+      } else if (roomType.includes('Suite') || roomType.includes('Deluxe') || roomType.includes('Penthouse')) {
+        guestCapacity = this.getRandomNumber(2, 4);
+      } else {
+        guestCapacity = this.getRandomNumber(1, 3);
+      }
 
       rooms.push({
-        type: this.getRandomElement(this.roomTypes),
+        type: roomType,
         basePrice: finalBasePrice,
         taxes: taxPercentage,
         location: this.getRandomElement(this.roomLocations),
@@ -163,51 +180,96 @@ export class SeederService {
     const endDate = new Date();
     endDate.setFullYear(endDate.getFullYear() + 1);
 
+    const roomReservations = new Map();
+
     for (const room of rooms) {
       const reservationsCount = this.getRandomNumber(2, 5);
+      roomReservations.set(room.id, []);
 
       for (let i = 0; i < reservationsCount; i++) {
         const traveler = this.getRandomElement(travelers);
-        const checkInDate = this.getRandomDate(startDate, endDate);
-        const checkOutDate = new Date(checkInDate);
-        checkOutDate.setDate(checkOutDate.getDate() + this.getRandomNumber(1, 7));
 
-        const reservation = await this.reservationsService.create({
-          checkInDate: checkInDate.toISOString().split('T')[0],
-          checkOutDate: checkOutDate.toISOString().split('T')[0],
+        let validDateFound = false;
+        let attempts = 0;
+        let checkInDate, checkOutDate;
+
+        while (!validDateFound && attempts < 5) {
+          checkInDate = this.getRandomDate(startDate, endDate);
+          checkOutDate = new Date(checkInDate);
+          checkOutDate.setDate(checkOutDate.getDate() + this.getRandomNumber(1, 7));
+
+          validDateFound = true;
+          const existingReservations = roomReservations.get(room.id);
+
+          for (const existingReservation of existingReservations) {
+            if (
+              (checkInDate >= existingReservation.checkInDate && checkInDate <= existingReservation.checkOutDate) ||
+              (checkOutDate >= existingReservation.checkInDate && checkOutDate <= existingReservation.checkOutDate) ||
+              (checkInDate <= existingReservation.checkInDate && checkOutDate >= existingReservation.checkOutDate)
+            ) {
+              validDateFound = false;
+              break;
+            }
+          }
+
+          attempts++;
+        }
+
+        if (!validDateFound) {
+          this.logger.debug(`No se encontraron fechas disponibles para la habitación ${room.id} después de 5 intentos`);
+          continue;
+        }
+
+        const guestCount = this.getRandomNumber(1, room.guestCapacity);
+
+        const reservationData = {
+          checkInDate: checkInDate,
+          checkOutDate: checkOutDate,
           guestName: `${traveler.firstName} ${traveler.lastName}`,
           guestEmail: traveler.email,
           guestPhone: `+57${this.getRandomNumber(300, 350)}${this.getRandomNumber(1000000, 9999999)}`,
           emergencyContactName: this.getRandomElement(this.travelerNames).firstName,
           emergencyContactPhone: `+57${this.getRandomNumber(300, 350)}${this.getRandomNumber(1000000, 9999999)}`,
           roomId: room.id,
-          userId: traveler.id
+          userId: traveler.id,
+          guestCount: guestCount,
+          status: ReservationStatus.PENDING
+        };
+
+        roomReservations.get(room.id).push({
+          checkInDate: checkInDate,
+          checkOutDate: checkOutDate
         });
 
+        const reservation = await this.reservationsService['reservationRepository'].create(reservationData);
+        const savedReservation = await this.reservationsService['reservationRepository'].save(reservation);
+
         if (Math.random() > 0.3) {
-          await this.reservationsService.confirm({
-            reservationId: reservation.id
-          }, agent.id);
+          savedReservation.status = ReservationStatus.CONFIRMED;
+          savedReservation.confirmedAt = new Date();
+          savedReservation.confirmedBy = agent.id;
+          await this.reservationsService['reservationRepository'].save(savedReservation);
 
           const messagesCount = this.getRandomNumber(1, 4);
           for (let j = 0; j < messagesCount; j++) {
             await this.messagesService.sendMessage({
-              reservationId: reservation.id,
+              reservationId: savedReservation.id,
               message: this.getRandomElement(this.messageTemplates)
             }, traveler.id);
 
             await this.messagesService.sendMessage({
-              reservationId: reservation.id,
+              reservationId: savedReservation.id,
               message: this.getRandomElement(this.agentResponses)
             }, agent.id);
           }
         }
 
         if (Math.random() < 0.2) {
-          await this.reservationsService.cancel({
-            reservationId: reservation.id,
-            reason: 'Cambio de planes'
-          }, Math.random() > 0.5 ? agent.id : traveler.id, Math.random() > 0.5);
+          savedReservation.status = ReservationStatus.CANCELLED;
+          savedReservation.cancellationReason = 'Cambio de planes';
+          savedReservation.cancelledAt = new Date();
+          savedReservation.cancelledBy = Math.random() > 0.5 ? agent.id : traveler.id;
+          await this.reservationsService['reservationRepository'].save(savedReservation);
         }
       }
     }
@@ -216,6 +278,20 @@ export class SeederService {
   async generateSeedData(count = 10) {
     try {
       this.logger.log(`Starting seed data generation for ${count} hotels`);
+
+      const originalSendConfirmation = this.reservationsService['reservationEmailService'].sendReservationConfirmation;
+
+      this.reservationsService['reservationEmailService'].sendReservationConfirmation = async () => {
+        this.logger.debug('Email sending skipped during seeding');
+        return Promise.resolve();
+      };
+
+      const originalSendEmail = this.reservationsService['reservationEmailService']['emailService'].sendEmail;
+
+      this.reservationsService['reservationEmailService']['emailService'].sendEmail = async () => {
+        this.logger.debug('Base email sending skipped during seeding');
+        return Promise.resolve({ messageId: 'mock-id-seeding' });
+      };
 
       const agentEmail = 'agent@bookinn.com';
       this.logger.log(`Looking for agent user: ${agentEmail}`);
@@ -245,6 +321,8 @@ export class SeederService {
 
         this.logger.log(`Searching hotels in ${city}`);
         const hotels = await this.googlePlacesService.searchHotels(city);
+
+        this.logger.log(`Found ${hotels.length} hotels in ${city}`);
 
         for (const hotel of hotels.slice(0, hotelsPerCity)) {
           if (totalHotels >= count) break;
@@ -331,6 +409,9 @@ export class SeederService {
           }
         }
       }
+
+      this.reservationsService['reservationEmailService'].sendReservationConfirmation = originalSendConfirmation;
+      this.reservationsService['reservationEmailService']['emailService'].sendEmail = originalSendEmail;
 
       this.logger.log('Seed data generation completed successfully');
       return { message: 'Seed data generated successfully' };
