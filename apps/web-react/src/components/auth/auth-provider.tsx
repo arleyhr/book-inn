@@ -2,7 +2,7 @@
 
 import { ReactNode, useEffect, useState, useCallback } from 'react'
 import { useAuthStore } from '../../store/auth'
-import { initializeApi, getApi } from '../../lib/api-config'
+import { initializeApi, getApi, clearApiTokens } from '../../lib/api-config'
 import { useRouter, usePathname } from 'next/navigation'
 import Cookies from 'js-cookie'
 
@@ -31,8 +31,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [login, logout, user])
 
   const handleUnauthorized = useCallback(() => {
+    const cookieOptions = {
+      path: '/',
+      sameSite: 'lax' as const,
+      secure: process.env.NODE_ENV === 'production',
+      domain: process.env.NEXT_PUBLIC_COOKIE_DOMAIN || undefined,
+    }
+
+    Cookies.remove('user', cookieOptions)
+    Cookies.remove('accessToken', cookieOptions)
+    Cookies.remove('refreshToken', cookieOptions)
+
+    clearApiTokens()
+
+    logout()
+
     if (!isPublicPath()) {
-      logout()
       router.push('/')
     }
   }, [logout, router, isPublicPath])
@@ -84,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           await fetchAndUpdateUserData()
         } catch (error) {
           if (!isPublicPath()) {
-            logout()
+            handleUnauthorized()
           }
         }
       }
@@ -92,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     initializeSession()
-  }, [isApiInitialized, login, logout, fetchAndUpdateUserData, isPublicPath])
+  }, [isApiInitialized, login, logout, fetchAndUpdateUserData, isPublicPath, handleUnauthorized])
 
   if (!isHydrated || !isApiInitialized) {
     if (isPublicPath()) {
