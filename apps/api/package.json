@@ -1,5 +1,10 @@
 {
   "scripts": {
-    "start": "node main.js --port $PORT"
+    "start": "node main.js --port $PORT",
+    "test:email": "npx ts-node -r tsconfig-paths/register -P tsconfig.scripts.json src/scripts/test-email.ts"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0"
   }
 }
