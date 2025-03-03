@@ -85,7 +85,10 @@ export function BookingConfirmationClient({ hotelId, searchParams }: BookingConf
     setDateRange({ startDate, endDate })
 
     if (startDate && endDate) {
-      await validateAndUpdateDates(startDate.toISOString(), endDate.toISOString())
+      const params = new URLSearchParams(window.location.search)
+      params.set('checkIn', startDate.toISOString())
+      params.set('checkOut', endDate.toISOString())
+      router.replace(`${window.location.pathname}?${params.toString()}`)
     }
   }
 
