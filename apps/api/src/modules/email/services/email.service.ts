@@ -9,24 +9,26 @@ export class EmailService {
   private readonly fromEmail: string;
 
   constructor(private readonly configService: ConfigService) {
-    const gmailUser = this.configService.get<string>('GMAIL_USER');
-    const gmailPass = this.configService.get<string>('GMAIL_APP_PASSWORD');
+    const user = this.configService.get<string>('EMAIL_USER');
+    const pass = this.configService.get<string>('EMAIL_PASSWORD');
+    const host = this.configService.get<string>('EMAIL_HOST');
+    const port = this.configService.get<number>('EMAIL_PORT');
 
-    if (!gmailUser || !gmailPass) {
-      this.logger.warn('Gmail credentials not set. Email functionality will be limited.');
+    if (!user || !pass) {
+      this.logger.warn('Email credentials not set. Email functionality will be limited.');
     }
 
     this.transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
+      host,
+      port,
       secure: false,
       auth: {
-        user: gmailUser,
-        pass: gmailPass,
+        user,
+        pass,
       },
     });
 
-    this.fromEmail = gmailUser || 'no-reply@book-inn.onrender.com';
+    this.fromEmail = user || 'no-reply@book-inn.onrender.com';
   }
 
   async sendEmail(options: {
